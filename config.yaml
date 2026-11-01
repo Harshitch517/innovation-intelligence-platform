@@ -1,0 +1,95 @@
+# Shared settings for the Innovation Intelligence Platform.
+# Every script reads this file through src/config.py; do not hard-code these values elsewhere.
+
+seed: 42
+
+years:
+  start: 2020
+  end: 2025
+
+# Target number of documents per domain (about half patents, half papers).
+target_per_domain: 6000
+target_per_source: 3000
+
+# The five technology domains (classes).
+# cpc_prefixes: a patent is labelled with the domain whose prefix matches its primary CPC code.
+# openalex_topics: a paper is labelled with the domain whose list contains its primary topic.
+# Chosen in Phase 1 from the OpenAlex topic catalogue (see reports/label_sources.md); topics that
+# straddle two domains (e.g. "AI in cancer detection") are left out so paper labels stay clean.
+domains:
+  Artificial Intelligence:
+    cpc_prefixes: ["G06N"]
+    openalex_topics: [T10320, T10181, T10028, T11307, T12026, T11273, T10906, T11010, T10456, T12535, T11612, T10100, T11975, T13904]
+  Healthcare:
+    cpc_prefixes: ["A61B", "G16H"]
+    openalex_topics: [T10522, T10350, T10912, T11021, T11196, T11932, T12053, T10916, T14510, T10844]
+  Robotics:
+    cpc_prefixes: ["B25J", "G05B19"]
+    openalex_topics: [T10571, T10653, T11615, T13382, T10586, T10191, T10868, T10879, T11687, T12784, T10709, T13344]
+  Cybersecurity:
+    cpc_prefixes: ["G06F21", "H04L9"]
+    openalex_topics: [T10400, T10734, T10237, T10951, T11504, T11241, T12479, T12122, T11614, T11800, T10927, T11424, T10270, T10764]
+  Renewable Energy:
+    cpc_prefixes: ["Y02E", "H02S", "F03D"]
+    openalex_topics: [T12271, T10905, T10468, T10680, T10740, T11250, T10624, T10247, T11007, T11225, T10476, T10223]
+
+# Institution name keywords that mark a university or research institute (used when
+# normalising names in Phase 2; the BigQuery assignee filter is bigquery.assignee_pattern).
+institution_keywords:
+  - university
+  - universit
+  - institute
+  - college
+  - iit
+  - research
+  - school of
+  - academy
+  - polytechnic
+  - laboratory
+  - cnrs
+  - fraunhofer
+
+# Patents: Google Patents Public Datasets on BigQuery (free sandbox, 1 TB of queries / month).
+# The project ID comes from GCP_PROJECT_ID in .env.
+bigquery:
+  source_table: patents-public-data.patents.publications
+  dataset: innovation                # created in your own project to hold the filtered table
+  staging_table: patents_filtered    # result of the one big filtered query
+  location: US                       # patents-public-data lives in the US multi-region
+  countries: ["US", "IN"]
+  # Hard cap per query; a dry run above this stops the script and asks the user.
+  max_bytes_billed_gb: 200
+  # Case-insensitive regex on assignee_harmonized.name. Harmonized names are abbreviated
+  # ("UNIV CALIFORNIA", "MASSACHUSETTS INST TECHNOLOGY"), so the abbreviations are included;
+  # word boundaries stop "INST" matching "INSTRUMENTS" and "RES" matching "RESOURCES".
+  assignee_pattern: '\b(UNIV|UNIVERSITY|UNIVERSITE|UNIVERSIDAD|INST|INSTITUTE|INSTITUT|COLLEGE|IIT|RES|RESEARCH)\b'
+
+cleaning:
+  min_abstract_words: 30
+
+splits:
+  train: 0.70
+  val: 0.15
+  test: 0.15
+
+paths:
+  raw_patents: data/raw/patents
+  raw_papers: data/raw/papers
+  processed: data/processed
+  outputs: data/outputs
+  models: models
+  reports: reports
+  documents: data/processed/documents.parquet
+
+models:
+  embedding: sentence-transformers/all-MiniLM-L6-v2
+  embedding_dim: 384
+  embedding_compare: allenai/specter2_base
+  embedding_batch_size: 128
+  transformer_classifier: allenai/scibert_scivocab_uncased
+  fastembed: sentence-transformers/all-MiniLM-L6-v2
+
+apis:
+  openalex_url: https://api.openalex.org
+  openalex_per_page: 100
+  gemini_model: gemini-3.8-flash

@@ -1,0 +1,28 @@
+# Offline pipeline (laptop). Install PyTorch with CUDA first:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu128
+pandas
+pyarrow
+scikit-learn
+sentence-transformers
+transformers
+datasets
+accelerate
+bertopic
+umap-learn
+hdbscan
+faiss-cpu
+fastembed
+requests
+tenacity
+python-dotenv
+pyyaml
+jupyter
+ipykernel
+matplotlib
+seaborn
+plotly
+pytest
+
+# Patents (Google Patents on BigQuery)
+google-cloud-bigquery
+db-dtypes
