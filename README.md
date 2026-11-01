@@ -46,7 +46,13 @@ python scripts/check_env.py # shows GPU, CUDA and which keys are present
 python -m src.pipeline.fetch_papers            # OpenAlex papers -> data/raw/papers/
 python -m src.pipeline.fetch_patents --dry-run # BigQuery size estimate only
 python -m src.pipeline.fetch_patents           # BigQuery patents -> data/raw/patents/
+python -m src.pipeline.clean                   # -> data/processed/documents.parquet + splits
+python -m pytest                               # unit tests
+python scripts/build_notebook.py notebooks/src/01_data_exploration.py notebooks/01_data_exploration.ipynb
 ```
+
+Notebooks are written as plain Python in `notebooks/src/` and built and executed into `notebooks/*.ipynb`
+by `scripts/build_notebook.py`.
 
 ## Project status
 
@@ -54,7 +60,7 @@ python -m src.pipeline.fetch_patents           # BigQuery patents -> data/raw/pa
 |---|---|
 | 0 — Environment setup | done |
 | 1 — Data collection | done (patents: BigQuery, papers: OpenAlex) |
-| 2 — Cleaning and labelling | pending |
+| 2 — Cleaning and labelling | done (30,000 docs, 6,000 per domain) |
 | 3 — Embeddings | pending |
 | 4 — Supervised classification | pending |
 | 5 — Similarity and semantic search | pending |

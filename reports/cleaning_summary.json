@@ -1,0 +1,58 @@
+{
+  "loaded": {
+    "paper": 22004,
+    "patent": 14906
+  },
+  "dropped_short_or_missing_abstract": 609,
+  "dropped_duplicate_title": 420,
+  "dropped_no_institution": 0,
+  "available_after_cleaning": {
+    "Artificial Intelligence|paper": 3616,
+    "Artificial Intelligence|patent": 3691,
+    "Cybersecurity|paper": 5240,
+    "Cybersecurity|patent": 1752,
+    "Healthcare|paper": 3671,
+    "Healthcare|patent": 3640,
+    "Renewable Energy|paper": 3616,
+    "Renewable Energy|patent": 3579,
+    "Robotics|paper": 5234,
+    "Robotics|patent": 1842
+  },
+  "final": {
+    "documents": 30000,
+    "by_domain_source": {
+      "Artificial Intelligence|paper": 3000,
+      "Artificial Intelligence|patent": 3000,
+      "Cybersecurity|paper": 4248,
+      "Cybersecurity|patent": 1752,
+      "Healthcare|paper": 3000,
+      "Healthcare|patent": 3000,
+      "Renewable Energy|paper": 3000,
+      "Renewable Energy|patent": 3000,
+      "Robotics|paper": 4158,
+      "Robotics|patent": 1842
+    },
+    "by_domain": {
+      "Artificial Intelligence": 6000,
+      "Cybersecurity": 6000,
+      "Healthcare": 6000,
+      "Renewable Energy": 6000,
+      "Robotics": 6000
+    },
+    "max_domain_share": 0.2,
+    "by_year": {
+      "2020": 4086,
+      "2021": 4287,
+      "2022": 4738,
+      "2023": 4985,
+      "2024": 5577,
+      "2025": 6327
+    },
+    "splits": {
+      "train": 21000,
+      "test": 4500,
+      "val": 4500
+    },
+    "institutions": 5969
+  }
+}

@@ -75,6 +75,50 @@ bigquery:
 
 cleaning:
   min_abstract_words: 30
+  # Phase 2 balancing: at most this many patents per domain, papers fill up to target_per_domain.
+  max_patents_per_domain: 3000
+  # Abbreviations used in Google's harmonized assignee names, expanded so patent and paper
+  # institution names normalise to the same form.
+  abbreviations:
+    univ: university
+    inst: institute
+    tech: technology
+    technol: technology
+    res: research
+    nat: national
+    natl: national
+    sci: science
+    acad: academy
+    coll: college
+    found: foundation
+    ind: industrial
+    coop: cooperation
+    adv: advanced
+    eng: engineering
+    med: medical
+    ctr: center
+    centre: center
+    lab: laboratory
+    labs: laboratories
+    dept: department
+    corp: corporation
+    assoc: association
+    polytech: polytechnic
+  # Words dropped from normalised names ("University of California" == "UNIV CALIFORNIA").
+  stopwords: [of, the, and, for, at, in, de, la, le, du, des, der, und]
+  # Legal-entity words in patent assignee names ("REGENTS", "R&DB FOUND", "TRUSTEES").
+  noise_words: [regents, trustees, board, governors, foundation, licensing, r, db, rdb, business, office, transfer, corporation, president, fellows]
+  # Removed only together with "cooperation" ("IND ACAD COOP FOUND" -> nothing).
+  cooperation_words: [cooperation, industrial, industry, academic, academy, university-industry]
+  # Institution name -> canonical name, for institutions that appear under several names
+  # (both sides go through the same normalisation, so write them naturally).
+  aliases:
+    mit: massachusetts institute of technology
+    kaist: korea advanced institute of science and technology
+    etri: electronics and telecommunications research institute
+    caltech: california institute of technology
+    itri: industrial technology research institute
+    leland stanford junior university: stanford university
 
 splits:
   train: 0.70
