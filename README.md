@@ -47,6 +47,7 @@ python -m src.pipeline.fetch_papers            # OpenAlex papers -> data/raw/pap
 python -m src.pipeline.fetch_patents --dry-run # BigQuery size estimate only
 python -m src.pipeline.fetch_patents           # BigQuery patents -> data/raw/patents/
 python -m src.pipeline.clean                   # -> data/processed/documents.parquet + splits
+python -m src.pipeline.embed                   # MiniLM + SPECTER2 vectors (GPU)
 python -m pytest                               # unit tests
 python scripts/build_notebook.py notebooks/src/01_data_exploration.py notebooks/01_data_exploration.ipynb
 ```
@@ -61,7 +62,7 @@ by `scripts/build_notebook.py`.
 | 0 — Environment setup | done |
 | 1 — Data collection | done (patents: BigQuery, papers: OpenAlex) |
 | 2 — Cleaning and labelling | done (30,000 docs, 6,000 per domain) |
-| 3 — Embeddings | pending |
+| 3 — Embeddings | done (MiniLM 384-d in 134 s, SPECTER2 768-d in 239 s) |
 | 4 — Supervised classification | pending |
 | 5 — Similarity and semantic search | pending |
 | 6 — Innovation clustering | pending |
