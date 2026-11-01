@@ -53,7 +53,7 @@ python -m src.pipeline.fetch_patents           # BigQuery patents -> data/raw/pa
 | Phase | Status |
 |---|---|
 | 0 — Environment setup | done |
-| 1 — Data collection | pending |
+| 1 — Data collection | done (patents: BigQuery, papers: OpenAlex) |
 | 2 — Cleaning and labelling | pending |
 | 3 — Embeddings | pending |
 | 4 — Supervised classification | pending |

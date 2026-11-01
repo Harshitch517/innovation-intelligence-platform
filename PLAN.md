@@ -130,7 +130,7 @@ All data comes from two free sources, fetched once to local files; labels come f
 
 | Source | Gives | Access | Limits |
 |---|---|---|---|
-| Google Patents Public Datasets (BigQuery table `patents-public-data.patents.publications`) | Granted patents (US and IN, configurable): title, abstract, harmonized assignee, dates, CPC codes, family ID, citations | Free BigQuery sandbox (no credit card); project ID in GCP_PROJECT_ID, credentials via `gcloud auth application-default login` | 1 TB of queries per month; tables expire after 60 days |
+| Google Patents Public Datasets (BigQuery tables `patents-public-data.patents.publications` + English text from `patents-public-data.google_patents_research.publications`) | Granted US patents (country list configurable): title, abstract, harmonized assignee, dates, CPC codes, family ID, citations | Free BigQuery sandbox (no credit card); project ID in GCP_PROJECT_ID, credentials via `gcloud auth application-default login` | 1 TB of queries per month; tables expire after 60 days |
 | OpenAlex API | Papers: title, abstract, institutions, year, topics | Free key, sent as api_key parameter | $1 of free usage per day; use per_page=100 |
 
 Institutional innovations = patents whose assignee is a university or research institute, plus papers whose authors belong to one. Filter assignees by name keywords (university, institute, college, IIT, research). BigQuery's harmonized assignee names are abbreviated ("UNIV CALIFORNIA", "MASSACHUSETTS INST TECHNOLOGY"), so the patent filter is a word-boundary regex that includes the abbreviations (`bigquery.assignee_pattern` in config.yaml).
@@ -147,10 +147,10 @@ Institutional innovations = patents whose assignee is a university or research i
 
 The exact CPC prefixes and OpenAlex topic IDs live in config.yaml; Claude Code verifies them against the API in Phase 1 and records the final lists in the report.
 
-- Patents take the label of their first (primary) CPC code (the `cpc` entry flagged `first`, else the first entry); drop patents whose primary code matches no domain.
+- Patents take the label of their first (primary) CPC code (the `cpc` entry flagged `first`, else the first entry). If the primary code matches no domain, they take the domain of their first matching *inventive* CPC code; if none matches either, a Y02E tag labels them Renewable Energy (Y-section codes are supplementary tags and are never primary). Drop patents that match none of these. The rule used is stored in `label_rule`.
 - Patents are deduplicated by family_id: one publication per family (the US grant if there is one, else the earliest grant).
 - Papers take the label of their primary topic.
-- Target about 6,000 documents per domain (roughly half patents, half papers), years 2020–2025, so classes are balanced.
+- Target about 6,000 documents per domain (roughly half patents, half papers), years 2020–2025, so classes are balanced. Where a domain has fewer than 3,000 university patents (Robotics, Cybersecurity), papers fill the gap so every domain still has about 6,000 documents.
 
 **Unified schema (documents.parquet)**
 
@@ -176,12 +176,12 @@ OpenAlex returns abstracts as an inverted index; clean.py rebuilds the plain tex
 |---|---|
 | doc_id | "PAT-" + publication_number (e.g. PAT-US-11234567-B2) |
 | source | constant "patent" |
-| title | title_localized, entry with language = 'en' |
-| abstract | abstract_localized, entry with language = 'en' |
+| title | google_patents_research.publications.title (original English only: title_translated = false) |
+| abstract | google_patents_research.publications.abstract (original English only: abstract_translated = false) |
 | institution | assignee_harmonized.name of the first assignee matching the university/institute pattern (normalised in Phase 2) |
 | country | that assignee's country_code (falls back to the publication country_code) |
 | year | year of grant_date |
-| domain | domain whose CPC prefix matches the primary CPC code |
+| domain | primary CPC code, else first inventive CPC code, else Y02E tag (see Domain labels) |
 | raw_codes | all cpc.code values, primary first |
 | cited_ids | citation.publication_number values, prefixed "PAT-" |
 
@@ -201,8 +201,8 @@ Thirteen phases run in order: data and ML first (Phases 0–7), then database, b
 
 ### Phase 1 — Data collection (week 1–2)
 
-- fetch_patents.py: query `patents-public-data.patents.publications` on BigQuery, reading only publication_number, family_id, country_code, publication_date, grant_date, title_localized, abstract_localized, cpc, assignee_harmonized and citation (never SELECT *).
-  - Filters: grant_date 2020-01-01 to 2025-12-31; English title and abstract; country_code in the configured list (US, IN); primary CPC matching a domain prefix; an assignee matching the university/institute pattern.
+- fetch_patents.py: query `patents-public-data.patents.publications` on BigQuery, reading only publication_number, family_id, country_code, publication_date, grant_date, cpc, assignee_harmonized and citation, joined with the English title and abstract from `google_patents_research.publications` (never SELECT *).
+  - Filters: grant_date 2020-01-01 to 2025-12-31; original-English title and abstract; country_code in the configured list (US); a CPC-based domain label (see Section 5); an assignee matching the university/institute pattern and not a company name.
   - Deduplicate by family_id (one publication per family).
   - Quota safety: dry-run every query and print the estimated bytes; maximum_bytes_billed = 200 GB per query; stop and ask if the estimate is higher.
   - Run ONE filtered query and save it to a small staging table in the user's sandbox dataset; draw each domain's sample from that table with cheap queries.
@@ -433,3 +433,7 @@ Changes made during implementation, with the reason for each (Section 9: "docume
 |---|---|---|
 | 2026-11-01 | Patents come from the PatentsView **bulk files** on the USPTO Open Data Portal instead of the PatentSearch API. `.env` key `PATENTSVIEW_API_KEY` is renamed `USPTO_API_KEY` (an ODP API key). Phase 1 `fetch_patents.py` downloads and filters the bulk tables instead of paging an API. | PatentsView's PatentSearch API was shut down on 2026-03-20 and its data moved to ODP bulk datasets. |
 | 2026-11-02 | **Supersedes the row above.** Patents come from Google Patents Public Datasets on BigQuery (free sandbox) instead of PatentsView / USPTO. `.env` drops the USPTO key and adds `GCP_PROJECT_ID`. Countries are US and IN (configurable). Patents are deduplicated by family_id. Section 2 now allows installing software without asking. | User decision: BigQuery needs only a Google account, while the USPTO Open Data Portal key needs ID.me identity verification. |
+| 2026-11-02 | Patent title and abstract come from `google_patents_research.publications` (original English text) instead of `title_localized` / `abstract_localized`. | The specified query would scan 248.9 GB (abstract_localized alone is 199 GB, every language; the table is not partitioned), over the 200 GB per-query cap. The hybrid query scans about 156 GB. User chose this option. |
+| 2026-11-02 | Countries: US only (IN dropped from the default list). | The publications table has no Indian publications with a 2020–2025 grant_date (diagnostic query, 20 GB). |
+| 2026-11-02 | Patent labelling: primary CPC, then first matching inventive CPC, then a Y02E tag. CPC prefixes `G05D1` (Robotics: mobile-robot control) and `H04L63` (Cybersecurity: network security) added. Assignee names with company suffixes (INC, CORP, LTD...) are excluded unless they contain UNIV or COLLEGE. | With the primary code only, university US grants gave 253 Renewable Energy, 774 Robotics and 1,092 Cybersecurity patents. Y02E is a tagging code that is never primary. Company false positives such as "SAS INST INC" matched the institute keyword. Result: 21,203 patents (AI 4,016, Healthcare 7,852, Renewable 5,679, Robotics 1,869, Cybersecurity 1,787). |
+| 2026-11-02 | Robotics and Cybersecurity have fewer than 3,000 patents, so extra papers are fetched (`fetch_papers --max 4300`) and Phase 2 fills each domain to about 6,000 documents with papers. | Keeps classes balanced without widening years beyond 2020–2025, which the trend analysis needs. |

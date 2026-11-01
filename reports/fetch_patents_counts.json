@@ -1,0 +1,158 @@
+{
+  "Artificial Intelligence": {
+    "total": 3750,
+    "available_in_staging": 4016,
+    "by_office": {
+      "US": 3750
+    },
+    "by_label_rule": {
+      "inventive": 2675,
+      "primary": 1075
+    },
+    "by_country": {
+      "US": 1178,
+      "CN": 1124,
+      "KR": 792,
+      "TW": 198,
+      "JP": 90,
+      "CA": 42,
+      "IL": 40,
+      "GB": 35,
+      "FR": 31,
+      "SA": 30
+    },
+    "by_year": {
+      "2020": 295,
+      "2021": 401,
+      "2022": 647,
+      "2023": 691,
+      "2024": 793,
+      "2025": 923
+    }
+  },
+  "Healthcare": {
+    "total": 3750,
+    "available_in_staging": 7852,
+    "by_office": {
+      "US": 3750
+    },
+    "by_label_rule": {
+      "primary": 2338,
+      "inventive": 1412
+    },
+    "by_country": {
+      "US": 2137,
+      "KR": 336,
+      "CN": 241,
+      "JP": 207,
+      "TW": 163,
+      "FR": 113,
+      "CA": 82,
+      "GB": 82,
+      "SA": 60,
+      "IL": 45
+    },
+    "by_year": {
+      "2020": 772,
+      "2021": 620,
+      "2022": 645,
+      "2023": 547,
+      "2024": 567,
+      "2025": 599
+    }
+  },
+  "Robotics": {
+    "total": 1869,
+    "available_in_staging": 1869,
+    "by_office": {
+      "US": 1869
+    },
+    "by_label_rule": {
+      "primary": 951,
+      "inventive": 918
+    },
+    "by_country": {
+      "CN": 638,
+      "US": 555,
+      "KR": 218,
+      "TW": 150,
+      "JP": 85,
+      "SA": 39,
+      "FR": 17,
+      "SG": 16,
+      "AU": 15,
+      "GB": 15
+    },
+    "by_year": {
+      "2020": 265,
+      "2021": 254,
+      "2022": 306,
+      "2023": 302,
+      "2024": 372,
+      "2025": 370
+    }
+  },
+  "Cybersecurity": {
+    "total": 1787,
+    "available_in_staging": 1787,
+    "by_office": {
+      "US": 1787
+    },
+    "by_label_rule": {
+      "primary": 1313,
+      "inventive": 474
+    },
+    "by_country": {
+      "US": 644,
+      "KR": 422,
+      "CN": 333,
+      "TW": 68,
+      "SA": 41,
+      "JP": 41,
+      "IL": 40,
+      "SG": 27,
+      "FR": 21,
+      "CA": 14
+    },
+    "by_year": {
+      "2020": 271,
+      "2021": 262,
+      "2022": 286,
+      "2023": 287,
+      "2024": 285,
+      "2025": 396
+    }
+  },
+  "Renewable Energy": {
+    "total": 3750,
+    "available_in_staging": 5679,
+    "by_office": {
+      "US": 3750
+    },
+    "by_label_rule": {
+      "y02e_tag": 3452,
+      "inventive": 159,
+      "primary": 139
+    },
+    "by_country": {
+      "US": 1326,
+      "CN": 814,
+      "KR": 554,
+      "JP": 201,
+      "SA": 167,
+      "TW": 148,
+      "FR": 96,
+      "CA": 50,
+      "GB": 43,
+      "DE": 41
+    },
+    "by_year": {
+      "2020": 746,
+      "2021": 667,
+      "2022": 571,
+      "2023": 613,
+      "2024": 563,
+      "2025": 590
+    }
+  }
+}

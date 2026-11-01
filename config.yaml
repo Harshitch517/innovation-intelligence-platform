@@ -12,7 +12,8 @@ target_per_domain: 6000
 target_per_source: 3000
 
 # The five technology domains (classes).
-# cpc_prefixes: a patent is labelled with the domain whose prefix matches its primary CPC code.
+# cpc_prefixes: a patent is labelled with the domain whose prefix matches its primary CPC code
+# (then its first matching inventive code, then a Y02E tag; see fetch_patents.staging_sql).
 # openalex_topics: a paper is labelled with the domain whose list contains its primary topic.
 # Chosen in Phase 1 from the OpenAlex topic catalogue (see reports/label_sources.md); topics that
 # straddle two domains (e.g. "AI in cancer detection") are left out so paper labels stay clean.
@@ -24,10 +25,10 @@ domains:
     cpc_prefixes: ["A61B", "G16H"]
     openalex_topics: [T10522, T10350, T10912, T11021, T11196, T11932, T12053, T10916, T14510, T10844]
   Robotics:
-    cpc_prefixes: ["B25J", "G05B19"]
+    cpc_prefixes: ["B25J", "G05B19", "G05D1"]
     openalex_topics: [T10571, T10653, T11615, T13382, T10586, T10191, T10868, T10879, T11687, T12784, T10709, T13344]
   Cybersecurity:
-    cpc_prefixes: ["G06F21", "H04L9"]
+    cpc_prefixes: ["G06F21", "H04L9", "H04L63"]
     openalex_topics: [T10400, T10734, T10237, T10951, T11504, T11241, T12479, T12122, T11614, T11800, T10927, T11424, T10270, T10764]
   Renewable Energy:
     cpc_prefixes: ["Y02E", "H02S", "F03D"]
@@ -53,16 +54,24 @@ institution_keywords:
 # The project ID comes from GCP_PROJECT_ID in .env.
 bigquery:
   source_table: patents-public-data.patents.publications
+  # English title/abstract: one text per patent (abstract column 110 GB vs 199 GB for
+  # abstract_localized in source_table), so the one big query fits under the 200 GB cap.
+  text_table: patents-public-data.google_patents_research.publications
   dataset: innovation                # created in your own project to hold the filtered table
   staging_table: patents_filtered    # result of the one big filtered query
   location: US                       # patents-public-data lives in the US multi-region
-  countries: ["US", "IN"]
+  # IN was tried first: the table has no Indian publications with a 2020-2025 grant_date,
+  # so only US grants remain (see PLAN.md Section 10).
+  countries: ["US"]
   # Hard cap per query; a dry run above this stops the script and asks the user.
   max_bytes_billed_gb: 200
   # Case-insensitive regex on assignee_harmonized.name. Harmonized names are abbreviated
   # ("UNIV CALIFORNIA", "MASSACHUSETTS INST TECHNOLOGY"), so the abbreviations are included;
   # word boundaries stop "INST" matching "INSTRUMENTS" and "RES" matching "RESOURCES".
   assignee_pattern: '\b(UNIV|UNIVERSITY|UNIVERSITE|UNIVERSIDAD|INST|INSTITUTE|INSTITUT|COLLEGE|IIT|RES|RESEARCH)\b'
+  # Company suffixes: such a name is skipped unless it also contains UNIV or COLLEGE
+  # (drops "SAS INST INC", keeps "KOREA UNIV RES & BUS FOUND").
+  company_pattern: '\b(INC|CORP|CORPORATION|LLC|LTD|LIMITED|GMBH|AG|PLC|KK|CO)\b'
 
 cleaning:
   min_abstract_words: 30
