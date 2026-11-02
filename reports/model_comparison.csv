@@ -1,0 +1,7 @@
+model,val_accuracy,val_f1_macro,train_seconds,params
+Fine-tuned SciBERT,0.95,0.95,1003.9,"{""lr"": 3e-05, ""epochs"": 3, ""batch_size"": 16, ""max_length"": 256, ""fp16"": true}"
+SPECTER2 embeddings + Logistic Regression,0.9367,0.9368,3.8,"{""C"": 64}"
+TF-IDF + Linear SVM,0.9318,0.9319,7.6,"{""C"": 1.0}"
+MiniLM embeddings + Logistic Regression,0.9313,0.9314,13.1,"{""C"": 4}"
+TF-IDF + Logistic Regression,0.9278,0.9279,15.4,"{""C"": 16}"
+TF-IDF + Naive Bayes,0.9053,0.9051,9.8,"{""alpha"": 0.1}"

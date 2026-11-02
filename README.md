@@ -70,7 +70,7 @@ by `scripts/build_notebook.py`.
 | 1 — Data collection | done (patents: BigQuery, papers: OpenAlex) |
 | 2 — Cleaning and labelling | done (30,000 docs, 6,000 per domain) |
 | 3 — Embeddings | done (MiniLM 384-d in 134 s, SPECTER2 768-d in 239 s) |
-| 4 — Supervised classification | pending |
+| 4 — Supervised classification | done (SciBERT test macro F1 0.954; served MiniLM+LR 0.923) |
 | 5 — Similarity and semantic search | done (search P@10 0.97, MiniLM MRR 0.21) |
 | 6 — Innovation clustering | done (94 global clusters, 161 sub-areas, NMI 0.48) |
 | 7 — Emerging technologies and institutions | done (605 institutions, back-test reported) |
