@@ -104,6 +104,7 @@ cleaning:
     corp: corporation
     assoc: association
     polytech: polytechnic
+    bus: business
   # Words dropped from normalised names ("University of California" == "UNIV CALIFORNIA").
   stopwords: [of, the, and, for, at, in, de, la, le, du, des, der, und]
   # Legal-entity words in patent assignee names ("REGENTS", "R&DB FOUND", "TRUSTEES").
@@ -119,6 +120,7 @@ cleaning:
     caltech: california institute of technology
     itri: industrial technology research institute
     leland stanford junior university: stanford university
+    univ korea res & bus found: korea university
 
 splits:
   train: 0.70

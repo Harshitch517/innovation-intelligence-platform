@@ -48,6 +48,11 @@ python -m src.pipeline.fetch_patents --dry-run # BigQuery size estimate only
 python -m src.pipeline.fetch_patents           # BigQuery patents -> data/raw/patents/
 python -m src.pipeline.clean                   # -> data/processed/documents.parquet + splits
 python -m src.pipeline.embed                   # MiniLM + SPECTER2 vectors (GPU)
+python -m src.pipeline.train_classifier        # 4 model families, reports/classification.json
+python -m src.pipeline.similarity              # FAISS index, retrieval + search evaluation
+python -m src.pipeline.cluster                 # BERTopic sub-areas
+python -m src.pipeline.trends                  # emerging list + back-test
+python -m src.pipeline.institutions            # profiles, similarity, network
 python -m pytest                               # unit tests
 python scripts/build_notebook.py notebooks/src/01_data_exploration.py notebooks/01_data_exploration.ipynb
 ```
@@ -64,9 +69,9 @@ by `scripts/build_notebook.py`.
 | 2 — Cleaning and labelling | done (30,000 docs, 6,000 per domain) |
 | 3 — Embeddings | done (MiniLM 384-d in 134 s, SPECTER2 768-d in 239 s) |
 | 4 — Supervised classification | pending |
-| 5 — Similarity and semantic search | pending |
-| 6 — Innovation clustering | pending |
-| 7 — Emerging technologies and institutions | pending |
+| 5 — Similarity and semantic search | done (search P@10 0.97, MiniLM MRR 0.21) |
+| 6 — Innovation clustering | done (94 global clusters, 161 sub-areas, NMI 0.48) |
+| 7 — Emerging technologies and institutions | done (605 institutions, back-test reported) |
 | 8 — Database | pending |
 | 9 — Backend API | pending |
 | 10 — Frontend dashboard | pending |

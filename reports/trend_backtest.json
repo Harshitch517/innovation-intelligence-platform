@@ -1,0 +1,175 @@
+{
+  "rule": "flag top 20 clusters by (n2022+n2023+1)/(n2020+n2021+1) using 2020-2023 only; hit = yearly average 2024-25 above 2022-23",
+  "eligible_clusters": 157,
+  "flagged": 20,
+  "hit_rate": 0.7,
+  "base_rate_all_eligible": 0.6943,
+  "base_rate_not_flagged": 0.6934,
+  "mean_later_growth_flagged": 0.2198,
+  "mean_later_growth_not_flagged": 0.2518,
+  "flagged_clusters": [
+    "CS-26",
+    "AI-28",
+    "AI-25",
+    "AI-33",
+    "CS-35",
+    "HC-25",
+    "CS-9",
+    "RE-8",
+    "AI-23",
+    "AI-8",
+    "AI-10",
+    "AI-17",
+    "AI-24",
+    "AI-11",
+    "AI-7",
+    "CS-25",
+    "AI-31",
+    "CS-11",
+    "RB-21",
+    "AI-13"
+  ],
+  "min_size": 40,
+  "top_emerging_now": [
+    {
+      "cluster_id": "HC-18",
+      "domain": "Healthcare",
+      "recent_growth": 3.0769,
+      "cagr": 0.3356,
+      "size": 82,
+      "keywords": [
+        "fractures",
+        "segmentation",
+        "spinal",
+        "spine",
+        "fracture"
+      ]
+    },
+    {
+      "cluster_id": "CS-20",
+      "domain": "Cybersecurity",
+      "recent_growth": 2.1852,
+      "cagr": 0.3852,
+      "size": 131,
+      "keywords": [
+        "ai",
+        "cyber threats",
+        "pp",
+        "threat detection",
+        "ml"
+      ]
+    },
+    {
+      "cluster_id": "AI-35",
+      "domain": "Artificial Intelligence",
+      "recent_growth": 1.4167,
+      "cagr": 0.4465,
+      "size": 44,
+      "keywords": [
+        "anomaly",
+        "anomaly detection",
+        "anomalous",
+        "abnormal",
+        "anomalies"
+      ]
+    },
+    {
+      "cluster_id": "AI-7",
+      "domain": "Artificial Intelligence",
+      "recent_growth": 1.25,
+      "cagr": 0.4541,
+      "size": 175,
+      "keywords": [
+        "innovation",
+        "intelligence ai",
+        "business",
+        "financial",
+        "technologies"
+      ]
+    },
+    {
+      "cluster_id": "CS-22",
+      "domain": "Cybersecurity",
+      "recent_growth": 1.0435,
+      "cagr": 0.1636,
+      "size": 98,
+      "keywords": [
+        "password",
+        "passwords",
+        "multifactor authentication",
+        "multifactor",
+        "biometrics"
+      ]
+    },
+    {
+      "cluster_id": "HC-11",
+      "domain": "Healthcare",
+      "recent_growth": 0.9787,
+      "cagr": 0.3643,
+      "size": 161,
+      "keywords": [
+        "ecg",
+        "arrhythmia",
+        "convolutional",
+        "deep learning",
+        "cnn"
+      ]
+    },
+    {
+      "cluster_id": "CS-32",
+      "domain": "Cybersecurity",
+      "recent_growth": 0.9412,
+      "cagr": 0.0313,
+      "size": 75,
+      "keywords": [
+        "sql",
+        "injection",
+        "sql injection",
+        "web applications",
+        "web application"
+      ]
+    },
+    {
+      "cluster_id": "AI-3",
+      "domain": "Artificial Intelligence",
+      "recent_growth": 0.9355,
+      "cagr": 0.2423,
+      "size": 239,
+      "keywords": [
+        "quantum",
+        "superconducting",
+        "circuit",
+        "gates",
+        "oscillator"
+      ]
+    },
+    {
+      "cluster_id": "HC-22",
+      "domain": "Healthcare",
+      "recent_growth": 0.9333,
+      "cagr": 0.081,
+      "size": 132,
+      "keywords": [
+        "iot",
+        "health monitoring",
+        "vital",
+        "heart rate",
+        "oxygen"
+      ]
+    },
+    {
+      "cluster_id": "AI-15",
+      "domain": "Artificial Intelligence",
+      "recent_growth": 0.9167,
+      "cagr": 0.3026,
+      "size": 124,
+      "keywords": [
+        "adaptation",
+        "domain adaptation",
+        "target domain",
+        "source domain",
+        "crossdomain"
+      ]
+    }
+  ]
+}

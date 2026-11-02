@@ -1,0 +1,26 @@
+{
+  "institutions_profiled": 605,
+  "min_docs": 10,
+  "edges": 2210,
+  "edge_threshold": 0.8028,
+  "isolated_nodes": 9,
+  "most_connected": [
+    "advanced institute korea science technology",
+    "national seoul university",
+    "korea university",
+    "california university",
+    "texas university"
+  ],
+  "by_country": {
+    "CN": 153,
+    "US": 138,
+    "KR": 41,
+    "JP": 25,
+    "GB": 21,
+    "TW": 20,
+    "IN": 18,
+    "CA": 16,
+    "DE": 13,
+    "AU": 13
+  }
+}
