@@ -3,7 +3,7 @@
     "model": "sentence-transformers/all-MiniLM-L6-v2",
     "documents": 30000,
     "dimension": 384,
-    "seconds": 133.5,
+    "seconds": 79.6,
     "device": "NVIDIA GeForce RTX 4050 Laptop GPU",
     "norm_check": 1.0
   },
@@ -11,7 +11,7 @@
     "model": "allenai/specter2_base",
     "documents": 30000,
     "dimension": 768,
-    "seconds": 238.8,
+    "seconds": 141.7,
     "device": "NVIDIA GeForce RTX 4050 Laptop GPU",
     "norm_check": 1.0
   }
