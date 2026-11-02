@@ -1,0 +1,213 @@
+{
+  "queries": 20,
+  "precision@10": 0.97,
+  "by_domain": {
+    "Artificial Intelligence": 0.95,
+    "Healthcare": 0.9,
+    "Robotics": 1.0,
+    "Cybersecurity": 1.0,
+    "Renewable Energy": 1.0
+  },
+  "per_query": [
+    {
+      "query": "neural network training method with reduced memory",
+      "domain": "Artificial Intelligence",
+      "precision@10": 1.0,
+      "top3": [
+        "Method and system for training a neural network",
+        "Data processing method and device for bit-number reduction in a neural network by establishing bit upper bound and bit lower bound using distribution information",
+        "Low-power, high-performance artificial neural network training accelerator and acceleration method"
+      ]
+    },
+    {
+      "query": "large language model for question answering",
+      "domain": "Artificial Intelligence",
+      "precision@10": 1.0,
+      "top3": [
+        "Evaluation of Medium-Sized Language Models in German and English Language",
+        "Deep learning based question answering system in Bengali",
+        "Towards Vietnamese Question and Answer Generation: An Empirical Study"
+      ]
+    },
+    {
+      "query": "reinforcement learning agent for decision making",
+      "domain": "Artificial Intelligence",
+      "precision@10": 0.8,
+      "top3": [
+        "Modeling Social Learning: An Agent-Based Approach",
+        "Adaptive Path-Planning for Autonomous Robots: A UCH-Enhanced Q-Learning Approach",
+        "Multi-agent coordination method and apparatus"
+      ]
+    },
+    {
+      "query": "graph neural network for node classification",
+      "domain": "Artificial Intelligence",
+      "precision@10": 1.0,
+      "top3": [
+        "MagNet: A Neural Network for Directed Graphs",
+        "Small-world nets for fast neural network training and execution",
+        "Iterative deep graph learning for graph neural networks"
+      ]
+    },
+    {
+      "query": "wearable sensor for continuous heart rate monitoring",
+      "domain": "Healthcare",
+      "precision@10": 1.0,
+      "top3": [
+        "Wearable health monitoring device",
+        "Personalized health care wearable sensor system",
+        "Continuous blood pressure monitoring with MMW radar sensor"
+      ]
+    },
+    {
+      "query": "MRI image reconstruction for diagnosis",
+      "domain": "Healthcare",
+      "precision@10": 0.8,
+      "top3": [
+        "Method of reconstructing magnetic resonance image data",
+        "Quantitative mapping of MRI relaxation parameters",
+        "Scan-specific recurrent neural network for image reconstruction"
+      ]
+    },
+    {
+      "query": "electronic health record system for patient data",
+      "domain": "Healthcare",
+      "precision@10": 0.9,
+      "top3": [
+        "Examining the implementation challenges and benefits of electronic health records (EHR) systems in large hospital settings",
+        "EXPLORING THE USE OF ELECTRONIC MEDICAL RECORDS FOR PATIENTS",
+        "Why Is the Electronic Health Record So Challenging for Research and Clinical Care?"
+      ]
+    },
+    {
+      "query": "minimally invasive surgical instrument",
+      "domain": "Healthcare",
+      "precision@10": 0.9,
+      "top3": [
+        "Minimally invasive surgical device",
+        "Surgical robot, instrument manipulator, combination of an operating table and a surgical robot, and master-slave operating system",
+        "Clinical Experience of a Smart Articulating Digital Device for Transanal Minimally Invasive Surgery"
+      ]
+    },
+    {
+      "query": "robot arm grasping objects with a gripper",
+      "domain": "Robotics",
+      "precision@10": 1.0,
+      "top3": [
+        "Improving the Grasping Force Behavior of a Robotic Gripper: Model, Simulations, and Experiments",
+        "Grasping Deformable Objects in Industry Application: A Comprehensive Review of Robotic Manipulation",
+        "Robotic manipulation of objects for grip adjustment"
+      ]
+    },
+    {
+      "query": "path planning for autonomous mobile robots",
+      "domain": "Robotics",
+      "precision@10": 1.0,
+      "top3": [
+        "Analysis of Indoor Path Planning Techniques for Wheeled Mobile Robots",
+        "Reliable Reliable Path Finding Technique for Mobile Robot",
+        "Path planning method of mobile robots based on image processing"
+      ]
+    },
+    {
+      "query": "soft robotic actuator",
+      "domain": "Robotics",
+      "precision@10": 1.0,
+      "top3": [
+        "Soft Actuators for Soft Robotic Applications: A Review",
+        "Systems and methods of soft robotic actuation with a liquid metal actuator",
+        "Method for making a soft actuator device"
+      ]
+    },
+    {
+      "query": "human robot collaboration in manufacturing",
+      "domain": "Robotics",
+      "precision@10": 1.0,
+      "top3": [
+        "Collaboration effectiveness-based complex operations allocation strategy towards to human\u2013robot interaction",
+        "Methodology for Designing Robotic Products in Light of The Collaboration Between Industrial Designer and Mechatronics Engineers",
+        "Human-robot collaborative flexible manufacturing system and method"
+      ]
+    },
+    {
+      "query": "intrusion detection system for network traffic",
+      "domain": "Cybersecurity",
+      "precision@10": 1.0,
+      "top3": [
+        "Method and system for adaptive network intrusion detection",
+        "Network intrusion detecting system and network intrusion detecting method",
+        "Developing SDN based Intrusion Detection System : A methodological Review"
+      ]
+    },
+    {
+      "query": "encryption scheme for secure data sharing",
+      "domain": "Cybersecurity",
+      "precision@10": 1.0,
+      "top3": [
+        "Privacy-Preserving Medical Data-Sharing System with Symmetric Encryption Based on Blockchain",
+        "Secure data sharing in collaborative network environments for privacy-preserving mechanisms",
+        "Flexible and Efficient Multi-Authorization Data Sharing Scheme With Enhanced Privacy Protection"
+      ]
+    },
+    {
+      "query": "malware detection using machine learning",
+      "domain": "Cybersecurity",
+      "precision@10": 1.0,
+      "top3": [
+        "A Low Complexity ML-Based Methods for Malware Classification",
+        "Malware Analysis Using Classification and Clustering Algorithms",
+        "Hardware-assisted malware detection using explainable machine learning"
+      ]
+    },
+    {
+      "query": "user authentication protocol",
+      "domain": "Cybersecurity",
+      "precision@10": 1.0,
+      "top3": [
+        "Identity and content authentication for phone calls",
+        "Method and device for information system access authentication",
+        "Systems and methods for authenticating a user accessing a user account"
+      ]
+    },
+    {
+      "query": "perovskite solar cell efficiency",
+      "domain": "Renewable Energy",
+      "precision@10": 1.0,
+      "top3": [
+        "Perovskite solar cell having excellent stability and high efficiency",
+        "Perovskite solar cell",
+        "Effect of treatment condition on perovskite film for perovskite solar cell application"
+      ]
+    },
+    {
+      "query": "wind turbine blade control",
+      "domain": "Renewable Energy",
+      "precision@10": 1.0,
+      "top3": [
+        "Performance Analysis of Horizontal Axis Wind Turbine using Variable Blade Pitch Control Mechanism",
+        "Wind turbine for a region with low wind speed",
+        "The effects of the dual control method on the aerodynamic characteristics of the wind turbine blade"
+      ]
+    },
+    {
+      "query": "maximum power point tracking for photovoltaic systems",
+      "domain": "Renewable Energy",
+      "precision@10": 1.0,
+      "top3": [
+        "Performance Evaluation of PV Model-Based Maximum Power Point Tracking Techniques",
+        "Review of maximum power point tracking algorithms of PV system",
+        "Inverter based implementation of maximum power point techniques"
+      ]
+    },
+    {
+      "query": "hydrogen production by water electrolysis",
+      "domain": "Renewable Energy",
+      "precision@10": 1.0,
+      "top3": [
+        "An overview of water electrolysis technologies for green hydrogen production",
+        "Enhanced water electrolysis with protic co-catalysts",
+        "Hydrogen production"
+      ]
+    }
+  ]
+}
