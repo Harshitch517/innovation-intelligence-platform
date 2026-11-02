@@ -1,0 +1,10 @@
+# Backend only (Render free web service, 512 MB). No PyTorch: fastembed runs MiniLM with ONNX.
+fastapi
+uvicorn[standard]
+psycopg[binary]
+psycopg_pool
+pgvector
+fastembed
+numpy
+requests
+python-dotenv

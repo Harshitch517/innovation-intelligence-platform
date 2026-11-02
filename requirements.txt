@@ -29,3 +29,7 @@ db-dtypes
 langid
 psycopg[binary]
 pgvector
+fastapi
+uvicorn[standard]
+psycopg_pool
+httpx
