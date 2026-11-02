@@ -1,9 +1,11 @@
-# Render blueprint for the backend (free web service). Secrets are set in the Render dashboard.
+# Render blueprint: API (free web service) + website (free static site).
+# Secrets are set in the Render dashboard (sync: false).
 services:
   - type: web
     name: innovation-intelligence-api
     runtime: python
     plan: free
+    region: singapore
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
@@ -12,10 +14,26 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.9
       - key: DATABASE_URL
-        sync: false        # Supabase connection string (pooler, port 6543)
+        sync: false        # Supabase session pooler URI (aws-0-<region>.pooler.supabase.com:5432)
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_MODEL
         value: gemini-3.5-flash-lite
       - key: ALLOWED_ORIGINS
-        sync: false        # e.g. https://innovation-intelligence.vercel.app
+        value: https://innovation-intelligence.onrender.com,http://localhost:3000,http://localhost:5173
+
+  - type: web
+    name: innovation-intelligence
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://innovation-intelligence-api.onrender.com
+      - key: NODE_VERSION
+        value: "22"
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

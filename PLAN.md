@@ -378,7 +378,7 @@ The platform deploys at zero cost because all heavy computation runs once on the
 
 - Supabase: create a free project, enable pgvector, run the schema, then load_db.py with the Supabase DATABASE_URL.
 - Render: deploy backend/ as a free web service (start command uvicorn app.main:app --host 0.0.0.0 --port $PORT); set DATABASE_URL, GEMINI_API_KEY and ALLOWED_ORIGINS as environment variables.
-- Vercel: deploy frontend/ with VITE_API_URL pointing to the Render URL.
+- Vercel: deploy frontend/ with VITE_API_URL pointing to the Render URL. (Done instead as a Render static site; see Section 10.)
 - Smoke test: search, similar, compare, explain, dashboard and network all work on the public URL.
 
 **Testing**
@@ -439,3 +439,4 @@ Changes made during implementation, with the reason for each (Section 9: "docume
 | 2026-11-02 | Robotics and Cybersecurity have fewer than 3,000 patents, so extra papers are fetched (`fetch_papers --max 4300`) and Phase 2 fills each domain to about 6,000 documents with papers. | Keeps classes balanced without widening years beyond 2020–2025, which the trend analysis needs. |
 | 2026-11-02 | Phase 2 drops abstracts that are not English (`langid` language identifier): 1,433 records removed, refilled from spare papers so each domain keeps 6,000 documents. Phases 3–7 rerun on the cleaned data. | About 3% of OpenAlex abstracts were Indonesian, Spanish, Portuguese and others; they formed their own cluster and would distort classification and trends. |
 | 2026-11-02 | Gemini model: `gemini-3.5-flash-lite` instead of `gemini-3.8-flash` (config.yaml, backend default). | `gemini-3.8-flash` returned 503 "high demand" or timed out after 60–120 s; flash-lite answers in about 2 s. All Gemini calls keep the keyword / no-explanation fallback. |
+| 2026-11-02 | Website hosted as a **Render static site** instead of Vercel; the API also runs on Render (Singapore), with the database on Supabase (Mumbai, session pooler). Live at https://innovation-intelligence.onrender.com. | The Vercel token provided was not an account access token, and Render's API key could create both services directly. The Supabase direct host is IPv6-only, so the IPv4 session pooler is used. |

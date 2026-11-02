@@ -2,6 +2,7 @@
 
 INT395 project. The platform analyses 30,000 patents and research papers from universities and research institutes (2020–2025). It classifies them into five technology domains: Artificial Intelligence, Healthcare, Robotics, Cybersecurity and Renewable Energy. Researchers can use it to search, compare and explore innovation trends.
 
+- **Live site:** https://innovation-intelligence.onrender.com. The API is at https://innovation-intelligence-api.onrender.com/docs. The first visit after about 15 idle minutes takes 30–60 s while the free server wakes up.
 - **Plan, phases and evaluation protocol:** [PLAN.md](PLAN.md); changes made during the build are in Section 10.
 - **Results:** [reports/final_report.md](reports/final_report.md).
 
@@ -36,7 +37,7 @@ flowchart LR
   T & S & I & G --> L[load_db] --> DB[(PostgreSQL + pgvector<br/>Supabase)]
   subgraph Online["Online (free hosting)"]
     DB --> API[FastAPI + fastembed<br/>Render]
-    API --> UI[React dashboard<br/>Vercel]
+    API --> UI[React dashboard<br/>Render static site]
     API -. explain .-> GM[Gemini API]
   end
 ```
@@ -50,7 +51,7 @@ Only the user's search query (and a `/classify` input) is embedded live, by fast
 | Database | PostgreSQL 17 + pgvector (HNSW) | Docker locally; Supabase online |
 | Backend | FastAPI, fastembed (ONNX, no PyTorch), psycopg | Render (free) |
 | LLM features | Gemini API (`gemini-3.5-flash-lite`) | Offline + on demand, with fallbacks |
-| Frontend | React, Vite, Tailwind, Recharts, Cytoscape.js | Vercel (free) |
+| Frontend | React, Vite, Tailwind, Recharts, Cytoscape.js | Render static site (free) |
 
 ## Data sources
 
@@ -107,10 +108,19 @@ python scripts/build_notebook.py notebooks/src/02_classification_experiments.py 
 
 ## Deployment (free tier)
 
-1. **Supabase:** create a project. Its pgvector extension is enabled by `schema.sql`. Put the pooler connection string in `.env` as `DATABASE_URL`, then run `python -m src.pipeline.load_db --trim` and `python -m src.pipeline.name_clusters` to fill it. The database takes about 160 MB of the 500 MB free limit.
-2. **Render:** create a new Blueprint from this repository; `render.yaml` sets up the backend. In the dashboard, set `DATABASE_URL`, `GEMINI_API_KEY` and `ALLOWED_ORIGINS` (the Vercel URL). The API uses about 220 MB of the 512 MB free limit.
-3. **Vercel:** import the repository with root directory `frontend` and set `VITE_API_URL` to the Render URL.
-4. **Smoke test:** check that search, similar, compare, explain, dashboard and network all work on the public URL. Render's free tier sleeps after 15 minutes idle, so open the site a minute before a demo.
+Both the API and the website run on Render's free tier; the data lives in Supabase.
+
+1. **Supabase (database):**
+   - Create a project. Its pgvector extension is enabled by `schema.sql`.
+   - Use the **Session pooler** connection string (`aws-0-<region>.pooler.supabase.com:5432`, user `postgres.<project-ref>`). The direct `db.<ref>.supabase.co` host is IPv6-only, which Render can't reach. Write `@` in the password as `%40`.
+   - With `DATABASE_URL` set to that string, run `python -m src.pipeline.load_db --trim`, then `python -m src.pipeline.name_clusters`.
+   - The database takes about 160 MB of the 500 MB free limit.
+2. **Render (API and website):** create a Blueprint from this repository. `render.yaml` defines both services:
+   - the API (`backend/`, Python): set `DATABASE_URL`, `GEMINI_API_KEY` and `ALLOWED_ORIGINS` (the website URL) in the Render dashboard. It uses about 220 MB of the 512 MB free limit.
+   - the website (`frontend/`, a static site): `VITE_API_URL` points to the API, and every route is rewritten to `index.html`.
+3. **Smoke test:** check that search, similar, compare, explain, dashboard and network all work on the public URL. Render's free tier sleeps after 15 minutes idle, so open the site a minute before a demo.
+
+Pushing to `main` redeploys both services. To change the data, rerun the pipeline, then run `load_db --trim` and `name_clusters` against Supabase.
 
 ## Project status
 
@@ -128,7 +138,7 @@ python scripts/build_notebook.py notebooks/src/02_classification_experiments.py 
 | 9 — Backend API | done (13 endpoints, 14 API tests pass) |
 | 10 — Frontend dashboard | done (6 pages + cluster page, light/dark, phone layout) |
 | 11 — Gemini features | done (cluster names and summaries, emerging paragraphs, cached Explain) |
-| 12 — Deployment and report | report done; deployment ready, waiting for Supabase / Render / Vercel accounts |
+| 12 — Deployment and report | done (live on Render + Supabase, smoke-tested) |
 
 ## Screenshots
 
