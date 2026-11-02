@@ -8,12 +8,17 @@ Run locally:
 """
 from __future__ import annotations
 
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import settings
 from app.routers import documents, institutions, search, trends
 from app.services.db import fetch_one
+
+# Show warnings such as psycopg_pool connection errors in the server log.
+logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
 
 app = FastAPI(
     title="Innovation Intelligence Platform API",
