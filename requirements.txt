@@ -27,3 +27,5 @@ pytest
 google-cloud-bigquery
 db-dtypes
 langid
+psycopg[binary]
+pgvector

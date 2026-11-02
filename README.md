@@ -53,6 +53,8 @@ python -m src.pipeline.similarity              # FAISS index, retrieval + search
 python -m src.pipeline.cluster                 # BERTopic sub-areas
 python -m src.pipeline.trends                  # emerging list + back-test
 python -m src.pipeline.institutions            # profiles, similarity, network
+docker run -d --name innovation-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=innovation -p 5432:5432 -v innovation_pgdata:/var/lib/postgresql/data pgvector/pgvector:pg17
+python -m src.pipeline.load_db                 # schema + data + HNSW index, FAISS check
 python -m pytest                               # unit tests
 python scripts/build_notebook.py notebooks/src/01_data_exploration.py notebooks/01_data_exploration.ipynb
 ```
@@ -72,7 +74,7 @@ by `scripts/build_notebook.py`.
 | 5 — Similarity and semantic search | done (search P@10 0.97, MiniLM MRR 0.21) |
 | 6 — Innovation clustering | done (94 global clusters, 161 sub-areas, NMI 0.48) |
 | 7 — Emerging technologies and institutions | done (605 institutions, back-test reported) |
-| 8 — Database | pending |
+| 8 — Database | done (pgvector HNSW top-10 = FAISS for 100/100 test docs) |
 | 9 — Backend API | pending |
 | 10 — Frontend dashboard | pending |
 | 11 — Gemini features | pending |
