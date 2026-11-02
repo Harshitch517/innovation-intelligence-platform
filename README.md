@@ -57,6 +57,7 @@ docker run -d --name innovation-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=
 python -m src.pipeline.load_db                 # schema + data + HNSW index, FAISS check
 python scripts/export_classifier.py            # served classifier -> backend/app/models/classifier.json
 cd backend; uvicorn app.main:app --reload      # API on http://localhost:8000 (docs at /docs)
+cd frontend; npm install; npm run dev          # dashboard on http://localhost:5173
 python -m pytest                               # unit tests
 python scripts/build_notebook.py notebooks/src/01_data_exploration.py notebooks/01_data_exploration.ipynb
 ```
@@ -78,7 +79,7 @@ by `scripts/build_notebook.py`.
 | 7 — Emerging technologies and institutions | done (605 institutions, back-test reported) |
 | 8 — Database | done (pgvector HNSW top-10 = FAISS for 100/100 test docs) |
 | 9 — Backend API | done (13 endpoints, 14 API tests pass) |
-| 10 — Frontend dashboard | pending |
+| 10 — Frontend dashboard | done (6 pages + cluster page, light/dark, phone layout) |
 | 11 — Gemini features | pending |
 | 12 — Deployment and report | pending |
 
