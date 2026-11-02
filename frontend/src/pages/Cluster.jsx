@@ -25,6 +25,12 @@ export default function Cluster() {
           {data.emerging_rank && <span>emerging rank #{data.emerging_rank}</span>}
         </div>
         {data.summary && <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-2">{data.summary}</p>}
+        {data.emerging_summary && (
+          <p className="mt-3 max-w-3xl rounded-lg border border-line bg-surface p-3 text-sm leading-relaxed text-ink-2">
+            <span className="mb-1 block text-xs font-medium text-muted">Why it is emerging (Gemini)</span>
+            {data.emerging_summary}
+          </p>
+        )}
         <p className="mt-2 text-xs text-muted">Keywords: {data.keywords.join(", ")}</p>
       </div>
       <div className="grid gap-4 lg:grid-cols-2">

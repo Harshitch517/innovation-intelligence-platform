@@ -94,7 +94,22 @@ def load(conn: psycopg.Connection, trim: bool) -> dict:
     for table in ("clusters", "documents", "trends", "institutions", "institution_similarity", "institution_edges"):
         counts[table] = conn.execute(f"SELECT count(*) FROM {table}").fetchone()[0]
     counts["hnsw_build_seconds"] = hnsw_seconds
+    counts["clusters_named"] = apply_cluster_names(conn)
     return counts
+
+
+def apply_cluster_names(conn: psycopg.Connection) -> int:
+    """Copy Gemini names and summaries (Phase 11 cache) into the clusters table, if present."""
+    cache_file = path("outputs") / "cluster_names.json"
+    if not cache_file.exists():
+        return 0
+    cache = json.loads(cache_file.read_text(encoding="utf-8"))
+    with conn.cursor() as cur:
+        for cid, v in cache.items():
+            cur.execute("UPDATE clusters SET name = %s, summary = %s, emerging_summary = %s WHERE cluster_id = %s",
+                        (v.get("name"), v.get("summary"), v.get("emerging_summary"), cid))
+    conn.commit()
+    return len(cache)
 
 
 def check(conn: psycopg.Connection, n: int = 100, seed: int = 42) -> dict:

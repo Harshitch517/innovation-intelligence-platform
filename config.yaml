@@ -147,4 +147,5 @@ models:
 apis:
   openalex_url: https://api.openalex.org
   openalex_per_page: 100
-  gemini_model: gemini-3.8-flash
+  # gemini-3.8-flash was overloaded (503 / timeouts) on 2026-11-02; flash-lite answers in ~2 s
+  gemini_model: gemini-3.5-flash-lite

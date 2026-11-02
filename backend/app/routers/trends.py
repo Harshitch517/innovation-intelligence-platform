@@ -10,7 +10,7 @@ from app.services.db import fetch_all, fetch_one
 
 router = APIRouter(tags=["trends"])
 
-CLUSTER_COLS = "cluster_id, scope, domain, name, summary, keywords, size, recent_growth, cagr, emerging_rank"
+CLUSTER_COLS = "cluster_id, scope, domain, name, summary, emerging_summary, keywords, size, recent_growth, cagr, emerging_rank"
 
 
 def _counts(rows: list[dict]) -> list[dict]:

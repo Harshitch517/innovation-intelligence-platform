@@ -106,6 +106,7 @@ class ClusterSummary(BaseModel):
     domain: str | None
     name: str | None
     summary: str | None
+    emerging_summary: str | None = None
     keywords: list[str]
     size: int
     recent_growth: float | None

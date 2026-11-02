@@ -15,6 +15,7 @@ CREATE TABLE clusters (
     sample_titles  text[] NOT NULL,
     name           text,                      -- readable name (Gemini, Phase 11), NULL until then
     summary        text,
+    emerging_summary text,                    -- one paragraph, top emerging sub-areas only
     recent_growth  real,                      -- sub-areas only (Phase 7)
     cagr           real,
     emerging_rank  integer
