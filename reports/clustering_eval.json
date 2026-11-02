@@ -1,0 +1,40 @@
+{
+  "embedding": "sentence-transformers/all-MiniLM-L6-v2",
+  "global": {
+    "clusters": 94,
+    "outlier_share": 0.2679,
+    "silhouette_cosine_excl_outliers": 0.0965,
+    "nmi_vs_domain_excl_outliers": 0.4814,
+    "ari_vs_domain_excl_outliers": 0.1327,
+    "nmi_vs_domain_all_docs": 0.4419,
+    "ari_vs_domain_all_docs": 0.1006,
+    "seconds": 57.3
+  },
+  "domain": {
+    "Artificial Intelligence": {
+      "clusters": 36,
+      "outlier_share": 0.213,
+      "silhouette_cosine_excl_outliers": 0.096
+    },
+    "Healthcare": {
+      "clusters": 33,
+      "outlier_share": 0.2587,
+      "silhouette_cosine_excl_outliers": 0.117
+    },
+    "Robotics": {
+      "clusters": 33,
+      "outlier_share": 0.2458,
+      "silhouette_cosine_excl_outliers": 0.0813
+    },
+    "Cybersecurity": {
+      "clusters": 39,
+      "outlier_share": 0.269,
+      "silhouette_cosine_excl_outliers": 0.0948
+    },
+    "Renewable Energy": {
+      "clusters": 20,
+      "outlier_share": 0.0622,
+      "silhouette_cosine_excl_outliers": 0.0803
+    }
+  }
+}
