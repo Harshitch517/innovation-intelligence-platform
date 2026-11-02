@@ -4,18 +4,19 @@
     "patent": 14906
   },
   "dropped_short_or_missing_abstract": 609,
-  "dropped_duplicate_title": 420,
+  "dropped_non_english_abstract": 1433,
+  "dropped_duplicate_title": 212,
   "dropped_no_institution": 0,
   "available_after_cleaning": {
-    "Artificial Intelligence|paper": 3616,
+    "Artificial Intelligence|paper": 3452,
     "Artificial Intelligence|patent": 3691,
-    "Cybersecurity|paper": 5240,
+    "Cybersecurity|paper": 4926,
     "Cybersecurity|patent": 1752,
-    "Healthcare|paper": 3671,
+    "Healthcare|paper": 3322,
     "Healthcare|patent": 3640,
-    "Renewable Energy|paper": 3616,
+    "Renewable Energy|paper": 3431,
     "Renewable Energy|patent": 3579,
-    "Robotics|paper": 5234,
+    "Robotics|paper": 5021,
     "Robotics|patent": 1842
   },
   "final": {
@@ -41,18 +42,18 @@
     },
     "max_domain_share": 0.2,
     "by_year": {
-      "2020": 4086,
-      "2021": 4287,
-      "2022": 4738,
-      "2023": 4985,
-      "2024": 5577,
-      "2025": 6327
+      "2020": 4061,
+      "2021": 4314,
+      "2022": 4753,
+      "2023": 4976,
+      "2024": 5530,
+      "2025": 6366
     },
     "splits": {
       "train": 21000,
       "test": 4500,
       "val": 4500
     },
-    "institutions": 5969
+    "institutions": 5764
   }
 }

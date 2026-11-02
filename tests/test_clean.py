@@ -27,20 +27,26 @@ def test_clean_text_strips_tags_entities_and_label():
     assert clean_text("<jats:p>Abstract: Solar &amp; wind  power</jats:p>") == "Solar & wind power"
 
 
-def test_filter_and_dedupe_drops_short_and_duplicate_titles():
-    long = " ".join(["word"] * 40)
+def test_filter_and_dedupe_drops_short_foreign_and_duplicate_titles():
+    english = ("The proposed robotic system uses a camera and a learning model to grasp objects "
+               "that are placed on a table, and it is evaluated in experiments with many different "
+               "household items where it shows a higher success rate than the previous methods.")
+    indonesian = ("Penelitian ini bertujuan untuk mengembangkan sistem keamanan jaringan yang dapat "
+                  "mendeteksi serangan pada jaringan komputer di lingkungan kampus dengan menggunakan "
+                  "metode pembelajaran mesin dan hasil penelitian menunjukkan bahwa sistem ini efektif.")
     df = pd.DataFrame(
         {
-            "doc_id": ["PAT-1", "PAP-W1", "PAP-W2", "PAP-W3"],
-            "source": ["patent", "paper", "paper", "paper"],
-            "title": ["Robot Arm!", "robot arm", "Another title", "Short one"],
-            "abstract": [long, long, long, "too short"],
+            "doc_id": ["PAT-1", "PAP-W1", "PAP-W2", "PAP-W3", "PAP-W4"],
+            "source": ["patent", "paper", "paper", "paper", "paper"],
+            "title": ["Robot Arm!", "robot arm", "Another title", "Short one", "Keamanan"],
+            "abstract": [english, english, english, "too short", indonesian],
         }
     )
     log: dict = {}
     out = filter_and_dedupe(df, 30, log)
     assert sorted(out["doc_id"]) == ["PAP-W2", "PAT-1"]  # patent kept over duplicate paper
-    assert log == {"dropped_short_or_missing_abstract": 1, "dropped_duplicate_title": 1}
+    assert log == {"dropped_short_or_missing_abstract": 1, "dropped_non_english_abstract": 1,
+                   "dropped_duplicate_title": 1}
 
 
 def test_paper_label_comes_from_primary_topic_only():

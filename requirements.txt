@@ -26,3 +26,4 @@ pytest
 # Patents (Google Patents on BigQuery)
 google-cloud-bigquery
 db-dtypes
+langid

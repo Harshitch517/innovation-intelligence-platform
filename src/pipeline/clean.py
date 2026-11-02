@@ -8,8 +8,9 @@ Output: data/processed/documents.parquet  (unified schema, PLAN.md Section 5)
 Steps
 1. Papers: rebuild the abstract from OpenAlex's inverted index, take the first university /
    research-institute affiliation as the institution, label by primary topic.
-2. Both sources: strip markup, drop abstracts shorter than min_abstract_words, drop duplicate
-   records (same ID, then same normalised title across all sources).
+2. Both sources: strip markup, drop abstracts shorter than min_abstract_words, drop abstracts
+   that are not English (langid language identifier; some OpenAlex abstracts are Indonesian,
+   Spanish, Portuguese...), drop duplicate records (same ID, then same normalised title).
 3. Normalise institution names so "UNIV CALIFORNIA" (patents) and "University of California"
    (papers) become the same key.
 4. Balance: per domain at most max_patents_per_domain patents, then papers up to
@@ -27,6 +28,7 @@ import re
 from collections import Counter
 from pathlib import Path
 
+import langid
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -180,6 +182,10 @@ def filter_and_dedupe(df: pd.DataFrame, min_words: int, log: dict) -> pd.DataFra
     n0 = len(df)
     df = df[(df["title"] != "") & (df["abstract"].map(word_count) >= min_words)]
     log["dropped_short_or_missing_abstract"] = n0 - len(df)
+
+    n_lang = len(df)
+    df = df[[langid.classify(a)[0] == "en" for a in df["abstract"]]]
+    log["dropped_non_english_abstract"] = n_lang - len(df)
 
     n1 = len(df)
     # Patents first so that a paper duplicating a patent title is the one dropped.
