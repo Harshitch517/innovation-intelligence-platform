@@ -7,7 +7,7 @@ DOMAINS = {"Artificial Intelligence", "Healthcare", "Robotics", "Cybersecurity",
 
 def test_health(client):
     r = client.get("/")
-    assert r.status_code == 200 and r.json()["documents"] == 30000
+    assert r.status_code == 200 and r.json()["documents"] >= 30000
 
 
 def test_search_returns_ranked_relevant_results(client):
@@ -91,7 +91,7 @@ def test_classify(client):
 
 def test_overview(client):
     body = client.get("/stats/overview").json()
-    assert body["documents"] == 30000 and body["patents"] + body["papers"] == 30000
+    assert body["documents"] >= 30000 and body["patents"] + body["papers"] == body["documents"]
     assert {x["key"] for x in body["by_domain"]} == DOMAINS
     assert len(body["top_institutions"]) == 15
 
@@ -132,3 +132,12 @@ def test_network(client):
     assert all(e["source"] in ids and e["target"] in ids for e in full["edges"])
     robo = client.get("/institutions/network", params={"domain": "Robotics"}).json()
     assert 0 < len(robo["nodes"]) < len(full["nodes"])
+
+
+def test_lpu_profile_and_search(client):
+    found = client.get("/institutions", params={"q": "lovely"}).json()
+    assert found and found[0]["name"] == "Lovely Professional University" and found[0]["documents"] >= 300
+    d = client.get(f"/institutions/{found[0]['institution']}").json()
+    assert d["country"] == "IN" and d["similar"] and d["recent_documents"]
+    res = client.get("/search", params={"q": "intrusion detection", "institution": found[0]["institution"], "k": 5}).json()
+    assert len(res["results"]) == 5 and all(r["institution_name"] == "Lovely Professional University" for r in res["results"])

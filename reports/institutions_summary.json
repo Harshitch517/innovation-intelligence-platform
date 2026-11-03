@@ -1,8 +1,8 @@
 {
-  "institutions_profiled": 605,
+  "institutions_profiled": 634,
   "min_docs": 10,
-  "edges": 2210,
-  "edge_threshold": 0.8028,
+  "edges": 2320,
+  "edge_threshold": 0.7997,
   "isolated_nodes": 9,
   "most_connected": [
     "advanced institute korea science technology",
@@ -14,11 +14,11 @@
   "by_country": {
     "CN": 153,
     "US": 138,
+    "IN": 46,
     "KR": 41,
     "JP": 25,
     "GB": 21,
     "TW": 20,
-    "IN": 18,
     "CA": 16,
     "DE": 13,
     "AU": 13

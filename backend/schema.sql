@@ -3,7 +3,7 @@
 
 CREATE EXTENSION IF NOT EXISTS vector;
 
-DROP TABLE IF EXISTS explanations_cache, institution_edges, institution_similarity, institutions,
+DROP TABLE IF EXISTS institution_edges, institution_similarity, institutions,
     trends, documents, clusters CASCADE;
 
 CREATE TABLE clusters (
@@ -77,7 +77,8 @@ CREATE TABLE institution_edges (
     PRIMARY KEY (source, target)
 );
 
-CREATE TABLE explanations_cache (
+-- Kept across reloads: cached AI explanations are expensive to regenerate.
+CREATE TABLE IF NOT EXISTS explanations_cache (
     doc_a       text,
     doc_b       text,
     explanation text NOT NULL,

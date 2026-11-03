@@ -36,6 +36,7 @@ def connect() -> psycopg.Connection:
     if not url:
         raise SystemExit("DATABASE_URL is missing from .env")
     conn = psycopg.connect(url, autocommit=False)
+    conn.execute("SET statement_timeout = 0")  # bulk COPY can exceed hosted defaults (Supabase)
     conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
     register_vector(conn)
     return conn
@@ -44,12 +45,9 @@ def connect() -> psycopg.Connection:
 def load(conn: psycopg.Connection, trim: bool) -> dict:
     """Create the schema and copy all tables in; return row counts."""
     out = path("outputs")
-    docs = pd.read_parquet(path("documents"))
-    ids = json.loads((path("processed") / "embedding_ids.json").read_text(encoding="utf-8"))
-    assert ids == docs["doc_id"].tolist()
-    vectors = np.load(path("processed") / "embeddings_minilm.npy")
-    docs = docs.merge(pd.read_parquet(path("processed") / "splits.parquet"), on="doc_id")
-    docs = docs.merge(pd.read_parquet(out / "doc_clusters.parquet"), on="doc_id")
+    from src.pipeline.corpus import load_all
+
+    docs, vectors = load_all()  # main dataset + India supplement (split = "extra")
     clusters = pd.read_parquet(out / "clusters.parquet")
     emerging = pd.read_parquet(out / "emerging.parquet").set_index("cluster_id")
     growth_all = pd.read_parquet(out / "trends.parquet")
@@ -129,7 +127,7 @@ def check(conn: psycopg.Connection, n: int = 100, seed: int = 42) -> dict:
         faiss_top = [docs["doc_id"].iat[r] for r in faiss_rows[0] if docs["doc_id"].iat[r] != doc_id][:10]
         start = time.perf_counter()
         db_top = [r[0] for r in conn.execute(
-            "SELECT doc_id FROM documents WHERE doc_id <> %s ORDER BY embedding <=> %s LIMIT 10", (doc_id, q)).fetchall()]
+            "SELECT doc_id FROM documents WHERE doc_id <> %s AND split <> 'extra' ORDER BY embedding <=> %s LIMIT 10", (doc_id, q)).fetchall()]
         latencies.append(time.perf_counter() - start)
         overlap.append(len(set(db_top) & set(faiss_top)) / 10)
         exact += db_top == faiss_top

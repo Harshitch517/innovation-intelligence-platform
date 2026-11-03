@@ -1,0 +1,36 @@
+{
+  "loaded": 2358,
+  "dropped_already_in_main_dataset": 1167,
+  "dropped_short_or_missing_abstract": 16,
+  "dropped_non_english_abstract": 3,
+  "dropped_duplicate_title": 3,
+  "final": 1169,
+  "by_domain": {
+    "Artificial Intelligence": 240,
+    "Cybersecurity": 279,
+    "Healthcare": 201,
+    "Renewable Energy": 191,
+    "Robotics": 258
+  },
+  "lpu_documents": 401,
+  "lpu_by_domain": {
+    "Artificial Intelligence": 66,
+    "Cybersecurity": 218,
+    "Healthcare": 27,
+    "Renewable Energy": 81,
+    "Robotics": 9
+  },
+  "institutions": 361,
+  "top_institutions": {
+    "Lovely Professional University": 401,
+    "Vellore Institute of Technology University": 23,
+    "SRM Institute of Science and Technology": 16,
+    "Indian Institute of Technology Delhi": 12,
+    "Manipal Academy of Higher Education": 10,
+    "Koneru Lakshmaiah Education Foundation": 10,
+    "Symbiosis International University": 9,
+    "Savitribai Phule Pune University": 9,
+    "Indian Institute of Science Bangalore": 9,
+    "Indian Institute of Technology Kanpur": 9
+  }
+}

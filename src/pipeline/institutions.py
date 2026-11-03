@@ -59,10 +59,9 @@ def profiles(docs: pd.DataFrame, vectors: np.ndarray) -> tuple[pd.DataFrame, np.
 
 def main() -> None:
     """Build profiles, the similarity table and the network, and save them."""
-    docs = pd.read_parquet(path("documents")).merge(pd.read_parquet(path("outputs") / "doc_clusters.parquet"), on="doc_id")
-    ids = json.loads((path("processed") / "embedding_ids.json").read_text(encoding="utf-8"))
-    assert ids == docs["doc_id"].tolist()
-    vectors = np.load(path("processed") / "embeddings_minilm.npy")
+    from src.pipeline.corpus import load_all
+
+    docs, vectors = load_all()  # main dataset + India supplement
 
     inst, vecs = profiles(docs, vectors)
     sim = vecs @ vecs.T

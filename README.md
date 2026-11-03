@@ -55,6 +55,8 @@ Only the user's search query (and a `/classify` input) is embedded live, by fast
 
 ## Data sources
 
+**India supplement.** 1,169 extra papers from Indian universities and institutes, including all 401 matching Lovely Professional University papers (`python -m src.pipeline.supplement_india`). They are searchable and comparable, and they appear in clusters and institution profiles. They are kept out of the 30,000-document evaluation set, so the classifier scores and the trend back-test are unchanged. Google Patents has only about 90 Indian university patents for 2020–2025, so no Indian patents were added.
+
 | Source | Gives | Access |
 |---|---|---|
 | [Google Patents Public Datasets](https://console.cloud.google.com/marketplace/product/google_patents_public_datasets/google-patents-public-data) on BigQuery | Granted US patents: title, abstract, assignee, dates, CPC codes, family, citations | `GCP_PROJECT_ID` (free BigQuery sandbox, no card) + `gcloud auth application-default login` |

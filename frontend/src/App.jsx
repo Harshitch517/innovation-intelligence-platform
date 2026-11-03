@@ -64,7 +64,7 @@ export default function App() {
         </Suspense>
       </main>
       <footer className="mx-auto max-w-6xl px-4 pb-8 text-xs text-muted">
-        INT395 · 30,000 university patents (Google Patents) and papers (OpenAlex), 2020–2025
+        INT395 · 31,169 university patents (Google Patents) and papers (OpenAlex), 2020–2025, including an India supplement
       </footer>
     </div>
   );
