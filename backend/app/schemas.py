@@ -46,6 +46,22 @@ class SimilarResponse(BaseModel):
     results: list[ScoredDocument]
 
 
+class Passage(BaseModel):
+    a: str
+    b: str
+    score: float
+
+
+class Insights(BaseModel):
+    """Brief local comparison (no LLM)."""
+    summary: str
+    shared_terms: list[str]
+    only_a: list[str]
+    only_b: list[str]
+    term_overlap: float
+    passages: list[Passage]
+
+
 class CompareResponse(BaseModel):
     a: DocumentSummary
     b: DocumentSummary
@@ -55,6 +71,7 @@ class CompareResponse(BaseModel):
     same_global_cluster: bool
     shared_keywords: list[str]
     different_institutions: bool
+    insights: Insights
 
 
 class ExplainResponse(BaseModel):
@@ -198,6 +215,7 @@ class AnalyzeResponse(BaseModel):
 
 class UploadCompareRequest(UploadText):
     doc_id: str
+    upload_side: str = Field("a", pattern="^[ab]$")  # which side of the page the upload is on
 
 
 class UploadCompareResponse(BaseModel):
@@ -205,7 +223,22 @@ class UploadCompareResponse(BaseModel):
     similarity: float
     predicted_domain: str
     same_domain: bool
+    insights: Insights
 
 
 class UploadExplainRequest(UploadText):
     doc_id: str
+
+
+class TextsRequest(BaseModel):
+    """Two uploaded documents (title + abstract each)."""
+    a: UploadText
+    b: UploadText
+
+
+class TextsCompareResponse(BaseModel):
+    similarity: float
+    predicted_domain_a: str
+    predicted_domain_b: str
+    same_domain: bool
+    insights: Insights

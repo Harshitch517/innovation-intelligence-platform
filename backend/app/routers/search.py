@@ -9,6 +9,7 @@ from app.services import gemini
 from app.services.classifier import classify as run_classifier
 from app.services.db import execute, fetch_all, fetch_one
 from app.services.embedding import embed
+from app.services.insights import compare as local_compare
 
 router = APIRouter(tags=["search"])
 
@@ -71,6 +72,7 @@ def compare(a: str, b: str) -> dict:
         "same_global_cluster": da["global_cluster"] == db_["global_cluster"],
         "shared_keywords": sorted(shared),
         "different_institutions": da["institution"] != db_["institution"],
+        "insights": local_compare(da, db_, sim),
     }
 
 

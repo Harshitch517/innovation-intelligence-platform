@@ -1,4 +1,4 @@
-"""Custom document upload: /analyze, /compare/upload, /explain/upload.
+"""Custom document upload: /analyze, /compare/upload, /explain/upload, /compare/texts, /explain/texts.
 
 The upload is read locally (pypdf / python-docx) and embedded with fastembed, so analysing and
 matching cost no LLM credits. Nothing is stored except cached explanations. The client keeps
@@ -12,12 +12,14 @@ import numpy as np
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 
 from app import settings
-from app.schemas import AnalyzeResponse, ExplainResponse, UploadCompareRequest, UploadCompareResponse, UploadExplainRequest
+from app.schemas import (AnalyzeResponse, ExplainResponse, TextsCompareResponse, TextsRequest, UploadCompareRequest,
+                         UploadCompareResponse, UploadExplainRequest)
 from app.services import gemini
 from app.services.classifier import classify
 from app.services.db import execute, fetch_all, fetch_one
 from app.services.embedding import embed
 from app.services.extract import MAX_BYTES, ExtractionError, extract
+from app.services.insights import compare as local_compare
 
 router = APIRouter(tags=["upload"])
 
@@ -59,10 +61,13 @@ def _doc(doc_id: str, cols: str = DOC_COLS) -> dict:
 @router.post("/compare/upload", response_model=UploadCompareResponse)
 def compare_upload(body: UploadCompareRequest) -> dict:
     """Similarity between an uploaded document and one database document."""
-    b = _doc(body.doc_id)
+    b = _doc(body.doc_id, DOC_COLS + ", abstract")
     sim = float(np.dot(_vector(body.title, body.abstract), b.pop("embedding").to_numpy().astype(np.float32)))
     predicted = classify(body.title, body.abstract)["domain"]
-    return {"b": b, "similarity": round(sim, 4), "predicted_domain": predicted, "same_domain": predicted == b["domain"]}
+    up = {"title": body.title, "abstract": body.abstract}
+    insights = local_compare(up, b, sim) if body.upload_side == "a" else local_compare(b, up, sim)
+    return {"b": b, "similarity": round(sim, 4), "predicted_domain": predicted, "same_domain": predicted == b["domain"],
+            "insights": insights}
 
 
 @router.post("/explain/upload", response_model=ExplainResponse)
@@ -75,6 +80,34 @@ def explain_upload(body: UploadExplainRequest) -> dict:
     if cached:
         return {"a": key[0], "b": key[1], "similarity": sim, "explanation": cached["explanation"], "cached": True, "model": None}
     a = {"source": "uploaded document", "title": body.title, "abstract": body.abstract}
+    text = gemini.explain_similarity(a, b, sim)
+    if text is None:
+        return {"a": key[0], "b": key[1], "similarity": sim, "explanation": None, "cached": False, "model": None,
+                "note": "Explanation unavailable right now. Please try again in a minute."}
+    execute("INSERT INTO explanations_cache (doc_a, doc_b, explanation, model) VALUES (%s, %s, %s, %s) "
+            "ON CONFLICT DO NOTHING", (*key, text, settings.GEMINI_MODEL))
+    return {"a": key[0], "b": key[1], "similarity": sim, "explanation": text, "cached": False, "model": None}
+
+
+@router.post("/compare/texts", response_model=TextsCompareResponse)
+def compare_texts(body: TextsRequest) -> dict:
+    """Similarity between two uploaded documents (no database document involved)."""
+    sim = float(np.dot(_vector(body.a.title, body.a.abstract), _vector(body.b.title, body.b.abstract)))
+    da, db_ = classify(body.a.title, body.a.abstract)["domain"], classify(body.b.title, body.b.abstract)["domain"]
+    return {"similarity": round(sim, 4), "predicted_domain_a": da, "predicted_domain_b": db_, "same_domain": da == db_,
+            "insights": local_compare(body.a.model_dump(), body.b.model_dump(), sim)}
+
+
+@router.post("/explain/texts", response_model=ExplainResponse)
+def explain_texts(body: TextsRequest) -> dict:
+    """AI explanation for two uploaded documents (cached by their content, short prompt)."""
+    sim = round(float(np.dot(_vector(body.a.title, body.a.abstract), _vector(body.b.title, body.b.abstract))), 4)
+    key = tuple(sorted((_upload_id(body.a.title, body.a.abstract), _upload_id(body.b.title, body.b.abstract))))
+    cached = fetch_one("SELECT explanation FROM explanations_cache WHERE doc_a = %s AND doc_b = %s", key)
+    if cached:
+        return {"a": key[0], "b": key[1], "similarity": sim, "explanation": cached["explanation"], "cached": True, "model": None}
+    a = {"source": "uploaded document", "title": body.a.title, "abstract": body.a.abstract}
+    b = {"source": "uploaded document", "title": body.b.title, "abstract": body.b.abstract}
     text = gemini.explain_similarity(a, b, sim)
     if text is None:
         return {"a": key[0], "b": key[1], "similarity": sim, "explanation": None, "cached": False, "model": None,

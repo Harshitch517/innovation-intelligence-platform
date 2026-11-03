@@ -42,8 +42,10 @@ export const api = {
     form.append("file", file);
     return request(`/analyze?k=${k}`, { method: "POST", body: form });
   },
-  compareUpload: (title, abstract, docId) =>
-    request("/compare/upload", { method: "POST", body: JSON.stringify({ title, abstract, doc_id: docId }) }),
+  compareUpload: (title, abstract, docId, side = "a") =>
+    request("/compare/upload", { method: "POST", body: JSON.stringify({ title, abstract, doc_id: docId, upload_side: side }) }),
+  compareTexts: (a, b) => request("/compare/texts", { method: "POST", body: JSON.stringify({ a, b }) }),
+  explainTexts: (a, b) => request("/explain/texts", { method: "POST", body: JSON.stringify({ a, b }) }),
   explainUpload: (title, abstract, docId) =>
     request("/explain/upload", { method: "POST", body: JSON.stringify({ title, abstract, doc_id: docId }) }),
   overview: () => request("/stats/overview"),

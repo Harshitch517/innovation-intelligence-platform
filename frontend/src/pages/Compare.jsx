@@ -26,8 +26,17 @@ function MatchMeter({ score, size = "sm" }) {
   );
 }
 
+// Relevance of a search result to the typed query (not a document-to-document match).
+function Relevance({ score }) {
+  return (
+    <span className="tabular whitespace-nowrap text-xs text-muted" title="How closely this result matches the words you searched for. The matching percentage between two documents appears once both are selected.">
+      relevance {matchPct(score)}%
+    </span>
+  );
+}
+
 // Preview of a hovered or focused result: badges, institution and the start of the abstract.
-function Preview({ doc, hint }) {
+function Preview({ doc, hint, kind }) {
   if (!doc)
     return <p className="rounded-lg border border-dashed border-line p-3 text-xs text-muted">{hint}</p>;
   return (
@@ -36,7 +45,7 @@ function Preview({ doc, hint }) {
         <SourceBadge source={doc.source} />
         <DomainBadge domain={doc.domain} />
         <span className="tabular text-xs text-muted">{doc.year}</span>
-        {doc.score !== undefined && <span className="ml-auto"><MatchMeter score={doc.score} /></span>}
+        {doc.score !== undefined && <span className="ml-auto">{kind === "match" ? <MatchMeter score={doc.score} /> : <Relevance score={doc.score} />}</span>}
       </div>
       <p className="mt-2 text-sm font-medium leading-snug text-ink">{doc.title}</p>
       <p className="mt-0.5 text-xs text-ink-2">{doc.institution_name}{doc.country ? ` · ${doc.country}` : ""}</p>
@@ -46,7 +55,8 @@ function Preview({ doc, hint }) {
 }
 
 // Clickable result rows; hovering or focusing a row shows its preview below the list.
-function ResultList({ items, onPick, selectedId, hint = "Hover over a result to preview it." }) {
+// kind: "relevance" for search results (score vs the query), "match" for matches with an uploaded document.
+function ResultList({ items, onPick, selectedId, kind = "relevance", hint = "Hover over a result to preview it." }) {
   const [hovered, setHovered] = useState(null);
   return (
     <div className="mt-2 space-y-2">
@@ -63,12 +73,12 @@ function ResultList({ items, onPick, selectedId, hint = "Hover over a result to 
                 <span className="line-clamp-2 text-ink">{r.title}</span>
                 <span className="text-xs text-muted">{r.institution_name} · {r.year}</span>
               </span>
-              {r.score !== undefined && <MatchMeter score={r.score} />}
+              {r.score !== undefined && (kind === "match" ? <MatchMeter score={r.score} /> : <Relevance score={r.score} />)}
             </button>
           </li>
         ))}
       </ul>
-      <Preview doc={hovered} hint={hint} />
+      <Preview doc={hovered} hint={hint} kind={kind} />
     </div>
   );
 }
@@ -118,14 +128,15 @@ function SearchPicker({ value, onPick }) {
       {error && <p className="mt-2 text-xs text-critical">{error.message}</p>}
       {results && results.length === 0 && <p className="mt-2 text-xs text-muted">No results. Try other words, or upload your document.</p>}
       {results && results.length > 0 && (
-        <ResultList items={results} onPick={onPick} hint="Hover over a result to preview it; click to select. The bar shows how well it matches your search." />
+        <ResultList items={results} onPick={onPick} hint="Hover over a result to preview it; click to select. Relevance is to your search words. The matching percentage between the two documents appears once both are selected." />
       )}
     </div>
   );
 }
 
 // Upload a Word/PDF/text file. Text is extracted on the server without any AI call.
-function UploadPicker({ upload, setUpload, onPickMatch, selectedB }) {
+// otherName: the other side ("A" or "B"); clicking a match makes it that side's document.
+function UploadPicker({ upload, setUpload, onPickMatch, selectedOther, otherName }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [drag, setDrag] = useState(false);
@@ -153,8 +164,8 @@ function UploadPicker({ upload, setUpload, onPickMatch, selectedB }) {
           <p className="mt-1 leading-relaxed">{upload.abstract}</p>
         </details>
         <div>
-          <p className="text-xs font-medium text-muted">Closest documents in the database: pick one as document B</p>
-          <ResultList items={upload.matches} onPick={onPickMatch} selectedId={selectedB}
+          <p className="text-xs font-medium text-muted">Closest documents in the database: pick one as document {otherName}</p>
+          <ResultList items={upload.matches} onPick={onPickMatch} selectedId={selectedOther} kind="match"
             hint="Hover over a match to preview it; the bar shows the matching percentage with your document." />
         </div>
       </div>
@@ -218,6 +229,52 @@ function ScoreBlock({ similarity }) {
   );
 }
 
+function Terms({ label, items, tone }) {
+  if (!items?.length) return null;
+  return (
+    <div>
+      <p className="text-xs font-medium text-muted">{label}</p>
+      <div className="mt-1 flex flex-wrap gap-1.5">
+        {items.map((t) => (
+          <span key={t} className={`rounded-full border px-2 py-0.5 text-xs ${tone === "shared" ? "border-accent text-ink" : "border-line text-ink-2"}`}>{t}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Brief comparison computed on the server without any AI model.
+function Insights({ data }) {
+  if (!data) return null;
+  return (
+    <div className="mt-5 space-y-4 border-t border-line pt-4">
+      <div>
+        <p className="text-[11px] font-medium uppercase tracking-wide text-muted">Quick comparison</p>
+        <p className="mt-1 text-sm leading-relaxed text-ink">{data.summary}</p>
+      </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        <Terms label="Shared key terms" items={data.shared_terms} tone="shared" />
+        <Terms label="Only in A" items={data.only_a} />
+        <Terms label="Only in B" items={data.only_b} />
+      </div>
+      {data.passages.length > 0 && (
+        <div>
+          <p className="text-xs font-medium text-muted">Closest passages</p>
+          <ul className="mt-1 space-y-2">
+            {data.passages.map((p, i) => (
+              <li key={i} className="grid gap-2 rounded-lg border border-line p-3 text-xs leading-relaxed text-ink-2 md:grid-cols-[1fr_auto_1fr] md:items-center">
+                <p><span className="font-semibold text-muted">A · </span>{p.a}</p>
+                <span className="justify-self-center"><MatchMeter score={p.score} /></span>
+                <p><span className="font-semibold text-muted">B · </span>{p.b}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function DbResult({ a, b }) {
   const { data, error, loading } = useApi(() => api.compare(a, b), [a, b]);
   if (error) return <ErrorBox error={error} />;
@@ -237,13 +294,17 @@ function DbResult({ a, b }) {
           <p className="mt-1 text-sm text-ink-2">{data.shared_keywords.length ? data.shared_keywords.join(", ") : "none"}</p>
         </div>
       </div>
+      <Insights data={data.insights} />
       <div className="mt-4 border-t border-line pt-4"><Explain key={`${a}|${b}`} a={a} b={b} /></div>
     </Card>
   );
 }
 
-function UploadResult({ upload, b }) {
-  const { data, error, loading } = useApi(() => api.compareUpload(upload.title, upload.abstract, b), [upload, b]);
+const text = (u) => ({ title: u.title, abstract: u.abstract });
+
+// One uploaded document vs one database document (the upload may be on either side).
+function UploadResult({ upload, docId, uploadSide }) {
+  const { data, error, loading } = useApi(() => api.compareUpload(upload.title, upload.abstract, docId, uploadSide.toLowerCase()), [upload, docId, uploadSide]);
   if (error) return <ErrorBox error={error} />;
   if (!data) return <Loading />;
   return (
@@ -251,12 +312,46 @@ function UploadResult({ upload, b }) {
       <ScoreBlock similarity={data.similarity} />
       <ul className="mt-5 space-y-1 border-t border-line pt-4">
         <Flag ok={data.same_domain}>
-          Same domain (your document: {data.predicted_domain}; database document: {data.b.domain})
+          Same domain (your document {uploadSide}: {data.predicted_domain}; database document: {data.b.domain})
         </Flag>
       </ul>
+      <Insights data={data.insights} />
       <div className="mt-4 border-t border-line pt-4">
-        <Explain key={`${upload.title}|${b}`} load={() => api.explainUpload(upload.title, upload.abstract, b)} />
+        <Explain key={`${upload.title}|${docId}`} load={() => api.explainUpload(upload.title, upload.abstract, docId)} />
       </div>
+    </Card>
+  );
+}
+
+// Two uploaded documents.
+function TextsResult({ ua, ub }) {
+  const { data, error, loading } = useApi(() => api.compareTexts(text(ua), text(ub)), [ua, ub]);
+  if (error) return <ErrorBox error={error} />;
+  if (!data) return <Loading />;
+  return (
+    <Card className={loading ? "opacity-50" : ""}>
+      <ScoreBlock similarity={data.similarity} />
+      <ul className="mt-5 space-y-1 border-t border-line pt-4">
+        <Flag ok={data.same_domain}>
+          Same domain (document A: {data.predicted_domain_a}; document B: {data.predicted_domain_b})
+        </Flag>
+      </ul>
+      <Insights data={data.insights} />
+      <div className="mt-4 border-t border-line pt-4">
+        <Explain key={`${ua.title}|${ub.title}`} load={() => api.explainTexts(text(ua), text(ub))} />
+      </div>
+    </Card>
+  );
+}
+
+function Side({ name, mode, setMode, docId, setDoc, upload, setUpload, otherName, otherDoc, onPickOther }) {
+  return (
+    <Card title={`Document ${name}`} action={<Tabs value={mode} onChange={setMode} />}>
+      {mode === "upload" ? (
+        <UploadPicker upload={upload} setUpload={setUpload} onPickMatch={onPickOther} selectedOther={otherDoc} otherName={otherName} />
+      ) : (
+        <SearchPicker value={docId} onPick={setDoc} />
+      )}
     </Card>
   );
 }
@@ -266,36 +361,46 @@ export default function Compare() {
   const a = params.get("a") || "";
   const b = params.get("b") || "";
   const [modeA, setModeA] = useState("db");
-  const [upload, setUpload] = useState(null);
+  const [modeB, setModeB] = useState("db");
+  const [uploadA, setUploadA] = useState(null);
+  const [uploadB, setUploadB] = useState(null);
   const set = (key) => (id) => {
     const n = new URLSearchParams(params);
     id ? n.set(key, id) : n.delete(key);
     setParams(n);
   };
-  const usingUpload = modeA === "upload";
+  // Picking a match from one side's upload fills the other side from the database.
+  const pickOther = (key, setOtherMode) => (id) => {
+    setOtherMode("db");
+    set(key)(id);
+  };
+
+  const sideA = modeA === "upload" ? (uploadA ? { upload: uploadA } : null) : a ? { doc: a } : null;
+  const sideB = modeB === "upload" ? (uploadB ? { upload: uploadB } : null) : b ? { doc: b } : null;
+  let result = null;
+  if (sideA && sideB) {
+    if (sideA.doc && sideB.doc) result = <DbResult a={a} b={b} />;
+    else if (sideA.upload && sideB.upload) result = <TextsResult ua={uploadA} ub={uploadB} />;
+    else if (sideA.upload) result = <UploadResult upload={uploadA} docId={b} uploadSide="A" />;
+    else result = <UploadResult upload={uploadB} docId={a} uploadSide="B" />;
+  }
 
   return (
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-semibold">Compare two innovations</h1>
         <p className="mt-1 text-sm text-ink-2">
-          Pick two documents from the database, or upload your own patent or paper and compare it with the closest matches.
+          Pick each document from the database or upload your own patent or paper (Word, PDF or text). The matching
+          percentage and explanation appear once both documents are chosen.
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        <Card title="Document A" action={<Tabs value={modeA} onChange={setModeA} />}>
-          {usingUpload ? (
-            <UploadPicker upload={upload} setUpload={setUpload} onPickMatch={set("b")} selectedB={b} />
-          ) : (
-            <SearchPicker value={a} onPick={set("a")} />
-          )}
-        </Card>
-        <Card title="Document B" subtitle={usingUpload && upload && !b ? "Select one of the matches on the left, or search" : undefined}>
-          <SearchPicker value={b} onPick={set("b")} />
-        </Card>
+        <Side name="A" mode={modeA} setMode={setModeA} docId={a} setDoc={set("a")} upload={uploadA} setUpload={setUploadA}
+          otherName="B" otherDoc={b} onPickOther={pickOther("b", setModeB)} />
+        <Side name="B" mode={modeB} setMode={setModeB} docId={b} setDoc={set("b")} upload={uploadB} setUpload={setUploadB}
+          otherName="A" otherDoc={a} onPickOther={pickOther("a", setModeA)} />
       </div>
-      {usingUpload && upload && b && <UploadResult upload={upload} b={b} />}
-      {!usingUpload && a && b && <DbResult a={a} b={b} />}
+      {result}
     </div>
   );
 }

@@ -94,3 +94,32 @@ def test_compare_and_explain_upload(client, monkeypatch):
     assert calls[0][1]["max_tokens"] <= 250 and len(calls[0][0]) < 2600  # short prompt, capped answer
     assert first["model"] is None
     execute("DELETE FROM explanations_cache WHERE doc_a = %s", (_upload_id(TITLE, ABSTRACT),))
+
+
+def test_compare_and_explain_two_uploads(client, monkeypatch):
+    other = {"title": "Wind turbine blade pitch control", "abstract": "A controller adjusts the blade pitch of a wind "
+             "turbine to maximise captured power and reduce loads under turbulent wind speeds and gusts."}
+    body = {"a": {"title": TITLE, "abstract": ABSTRACT}, "b": other}
+    same = client.post("/compare/texts", json={"a": body["a"], "b": body["a"]}).json()
+    diff = client.post("/compare/texts", json=body).json()
+    assert same["similarity"] > 0.999 and diff["similarity"] < same["similarity"]
+    assert diff["predicted_domain_a"] == "Renewable Energy"
+    calls = []
+    monkeypatch.setattr(gemini, "generate", lambda prompt, **kw: calls.append(1) or "Both concern renewable power.")
+    swapped = {"a": other, "b": body["a"]}
+    first = client.post("/explain/texts", json=body).json()
+    second = client.post("/explain/texts", json=swapped).json()  # order does not matter for the cache
+    assert first["explanation"] and second["cached"] and len(calls) == 1
+    from app.routers.upload import _upload_id
+    execute("DELETE FROM explanations_cache WHERE doc_a = ANY(%s)", ([_upload_id(TITLE, ABSTRACT), _upload_id(other["title"], other["abstract"])],))
+
+
+def test_local_insights_without_llm(client, monkeypatch):
+    monkeypatch.setattr(gemini, "generate", lambda *a, **k: (_ for _ in ()).throw(AssertionError("no LLM call expected")))
+    other = {"title": "Stable perovskite photovoltaic module with passivation", "abstract": "Perovskite solar cells degrade "
+             "under humidity. We passivate the perovskite film with an organic ammonium layer, which improves moisture "
+             "stability. Encapsulated modules keep their power conversion efficiency over long outdoor tests."}
+    ins = client.post("/compare/texts", json={"a": {"title": TITLE, "abstract": ABSTRACT}, "b": other}).json()["insights"]
+    assert any("perovskite" in t for t in ins["shared_terms"]) and ins["passages"]
+    assert ins["summary"].startswith("Both documents deal with") and "%" in ins["summary"]
+    assert 0 < ins["term_overlap"] < 1
