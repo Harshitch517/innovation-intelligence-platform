@@ -136,7 +136,7 @@ function Classify({ c }) {
           className="w-full rounded-md border border-line bg-surface px-2.5 py-1.5 text-sm" />
         <textarea value={abstract} onChange={(e) => setAbstract(e.target.value)} placeholder="Abstract (at least 20 characters)" required minLength={20} rows={4}
           className="w-full rounded-md border border-line bg-surface px-2.5 py-1.5 text-sm" />
-        <button className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white hover:opacity-90" disabled={state.status === "loading"}>
+        <button className="btn-primary rounded-md px-3 py-1.5 text-sm font-medium" disabled={state.status === "loading"}>
           {state.status === "loading" ? "Classifying…" : "Classify"}
         </button>
       </form>

@@ -3,8 +3,9 @@
 export const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
 
 async function request(path, options = {}) {
+  const isForm = options.body instanceof FormData;
   const res = await fetch(`${API_URL}${path}`, {
-    headers: { "Content-Type": "application/json" },
+    headers: isForm ? {} : { "Content-Type": "application/json" },
     ...options,
   });
   if (!res.ok) {
@@ -36,6 +37,15 @@ export const api = {
   compare: (a, b) => request(`/compare${query({ a, b })}`),
   explain: (a, b) => request(`/explain${query({ a, b })}`),
   classify: (title, abstract) => request("/classify", { method: "POST", body: JSON.stringify({ title, abstract }) }),
+  analyze: (file, k = 10) => {
+    const form = new FormData();
+    form.append("file", file);
+    return request(`/analyze?k=${k}`, { method: "POST", body: form });
+  },
+  compareUpload: (title, abstract, docId) =>
+    request("/compare/upload", { method: "POST", body: JSON.stringify({ title, abstract, doc_id: docId }) }),
+  explainUpload: (title, abstract, docId) =>
+    request("/explain/upload", { method: "POST", body: JSON.stringify({ title, abstract, doc_id: docId }) }),
   overview: () => request("/stats/overview"),
   trends: (domain) => request(`/trends${query({ domain })}`),
   clusters: (params) => request(`/clusters${query(params)}`),

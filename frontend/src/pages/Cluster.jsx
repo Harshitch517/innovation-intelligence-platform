@@ -27,7 +27,7 @@ export default function Cluster() {
         {data.summary && <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-2">{data.summary}</p>}
         {data.emerging_summary && (
           <p className="mt-3 max-w-3xl rounded-lg border border-line bg-surface p-3 text-sm leading-relaxed text-ink-2">
-            <span className="mb-1 block text-xs font-medium text-muted">Why it is emerging (Gemini)</span>
+            <span className="mb-1 block text-xs font-medium text-muted">Why it is emerging</span>
             {data.emerging_summary}
           </p>
         )}

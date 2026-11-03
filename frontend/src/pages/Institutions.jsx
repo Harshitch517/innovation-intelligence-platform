@@ -23,7 +23,7 @@ function Picker({ onPick, disabled }) {
         {list.map((i) => (
           <li key={i.institution}>
             <button onClick={() => onPick(i.institution)} disabled={disabled}
-              className="flex w-full items-center justify-between gap-2 py-2 text-left text-sm hover:text-accent disabled:opacity-40">
+              className="row-btn flex w-full items-center justify-between gap-2 rounded px-1 py-2 text-left text-sm hover:text-accent">
               <span>{i.name} <span className="text-xs text-muted">{i.country}</span></span>
               <span className="tabular text-xs text-muted">{fmt(i.documents)}</span>
             </button>
@@ -75,7 +75,7 @@ export default function Institutions() {
                         <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: colorOf(id) }} aria-hidden />
                         <h2 className="text-sm font-semibold leading-snug">{d.name}</h2>
                       </div>
-                      <button onClick={() => setIds(ids.filter((x) => x !== id))} className="text-xs text-muted hover:text-critical" aria-label={`Remove ${d.name}`}>✕</button>
+                      <button onClick={() => setIds(ids.filter((x) => x !== id))} className="btn-link rounded px-1 text-xs text-muted hover:text-critical" aria-label={`Remove ${d.name}`}>✕</button>
                     </div>
                     <p className="text-xs text-muted">{d.country} · main domain</p>
                     <DomainBadge domain={d.top_domain} />
@@ -132,7 +132,7 @@ export default function Institutions() {
                   {x.similar.slice(0, 6).map((s) => (
                     <li key={s.institution} className="flex items-center justify-between gap-2 text-sm">
                       <button onClick={() => ids.length < 3 && !ids.includes(s.institution) && setIds([...ids, s.institution])}
-                        className="text-left text-ink-2 hover:text-accent">{s.name}</button>
+                        className="btn-link rounded text-left text-ink-2 hover:text-accent">{s.name}</button>
                       <span className="tabular text-xs text-muted">{s.similarity.toFixed(2)}</span>
                     </li>
                   ))}

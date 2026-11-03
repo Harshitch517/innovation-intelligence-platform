@@ -14,7 +14,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import settings
-from app.routers import documents, institutions, search, trends
+from app.routers import documents, institutions, search, trends, upload
 from app.services.db import fetch_one
 
 # Show warnings such as psycopg_pool connection errors in the server log.
@@ -32,6 +32,7 @@ app.include_router(search.router)
 app.include_router(documents.router)
 app.include_router(trends.router)
 app.include_router(institutions.router)
+app.include_router(upload.router)
 
 
 @app.get("/", tags=["health"])

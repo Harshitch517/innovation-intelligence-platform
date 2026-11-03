@@ -83,6 +83,56 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Buttons: smooth hover/press feedback everywhere, plus a visible keyboard focus ring. */
+@layer base {
+  button,
+  [role="button"],
+  select,
+  input[type="file"]::file-selector-button {
+    cursor: pointer;
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, box-shadow 150ms ease,
+      transform 100ms ease, opacity 150ms ease;
+  }
+  button:not(:disabled):hover {
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 2px 8px rgb(0 0 0 / 0.06);
+  }
+  button:not(:disabled):active {
+    transform: translateY(1px) scale(0.98);
+  }
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  button:focus-visible,
+  a:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+/* Primary action: accent fill that deepens on hover. */
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in oklab, var(--accent) 85%, black);
+}
+
+/* Text-style buttons (Explain, Change...): no shadow, underline + tint on hover. */
+.btn-link:not(:disabled):hover {
+  box-shadow: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Result rows used as buttons. */
+.row-btn:not(:disabled):hover {
+  box-shadow: none;
+  background: var(--surface-2);
+}
+
 /* Recharts: recessive grid and axes */
 .recharts-cartesian-grid line {
   stroke: var(--grid);

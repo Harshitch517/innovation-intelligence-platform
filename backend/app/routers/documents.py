@@ -35,6 +35,7 @@ def similar(doc_id: str, k: int = Query(10, ge=1, le=50), other_institutions_onl
     params = [doc["embedding"], doc_id] + ([doc["institution"]] if other_institutions_only else []) + [doc["embedding"], k]
     rows = fetch_all(
         "SELECT doc_id, source, title, institution, institution_name, country, year, domain, cluster_id, "
+        "left(abstract, 320) AS snippet, "
         f"1 - (embedding <=> %s) AS score FROM documents WHERE doc_id <> %s {extra} "
         "ORDER BY embedding <=> %s LIMIT %s", params)
     for r in rows:

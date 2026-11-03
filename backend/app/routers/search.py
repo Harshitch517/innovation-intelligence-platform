@@ -13,6 +13,8 @@ from app.services.embedding import embed
 router = APIRouter(tags=["search"])
 
 SUMMARY_COLS = "doc_id, source, title, institution, institution_name, country, year, domain, cluster_id"
+# Short abstract preview for result cards and hover previews.
+SNIPPET = "left(abstract, 320) AS snippet"
 
 
 @router.get("/search", response_model=SearchResponse)
@@ -33,7 +35,7 @@ def search(
             where.append(f"{col} {op} %s")
             params.append(val)
     vec = embed(q)
-    sql = (f"SELECT {SUMMARY_COLS}, 1 - (embedding <=> %s) AS score FROM documents "
+    sql = (f"SELECT {SUMMARY_COLS}, {SNIPPET}, 1 - (embedding <=> %s) AS score FROM documents "
            f"{'WHERE ' + ' AND '.join(where) if where else ''} ORDER BY embedding <=> %s LIMIT %s")
     rows = fetch_all(sql, [vec, *params, vec, k])
     for r in rows:
@@ -74,20 +76,20 @@ def compare(a: str, b: str) -> dict:
 
 @router.get("/explain", response_model=ExplainResponse)
 def explain(a: str, b: str) -> dict:
-    """Gemini explanation of why two documents are similar, cached in explanations_cache."""
+    """AI explanation of why two documents are similar, cached in explanations_cache."""
     key = tuple(sorted((a, b)))
     da, db_, sim = _pair(*key)
     cached = fetch_one("SELECT explanation, model FROM explanations_cache WHERE doc_a = %s AND doc_b = %s", key)
     if cached:
         return {"a": key[0], "b": key[1], "similarity": sim, "explanation": cached["explanation"],
-                "cached": True, "model": cached["model"]}
+                "cached": True, "model": None}
     text = gemini.explain_similarity(da, db_, sim)
     if text is None:
         return {"a": key[0], "b": key[1], "similarity": sim, "explanation": None, "cached": False, "model": None,
-                "note": "Explanation unavailable right now (Gemini not configured or not responding)."}
+                "note": "Explanation unavailable right now. Please try again in a minute."}
     execute("INSERT INTO explanations_cache (doc_a, doc_b, explanation, model) VALUES (%s, %s, %s, %s) "
             "ON CONFLICT DO NOTHING", (*key, text, settings.GEMINI_MODEL))
-    return {"a": key[0], "b": key[1], "similarity": sim, "explanation": text, "cached": False, "model": settings.GEMINI_MODEL}
+    return {"a": key[0], "b": key[1], "similarity": sim, "explanation": text, "cached": False, "model": None}
 
 
 @router.post("/classify", response_model=ClassifyResponse)

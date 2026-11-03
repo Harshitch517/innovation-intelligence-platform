@@ -18,6 +18,7 @@ class DocumentSummary(BaseModel):
 
 class ScoredDocument(DocumentSummary):
     score: float
+    snippet: str | None = None
     other_institution: bool | None = None
 
 
@@ -175,3 +176,36 @@ class NetworkResponse(BaseModel):
     domain: str | None
     nodes: list[NetworkNode]
     edges: list[NetworkEdge]
+
+
+class UploadText(BaseModel):
+    """Title and abstract taken from an uploaded document (sent back by the client)."""
+    title: str = Field(..., min_length=1, max_length=500)
+    abstract: str = Field(..., min_length=20, max_length=4000)
+
+
+class AnalyzeResponse(BaseModel):
+    filename: str
+    file_type: str
+    pages: int
+    word_count: int
+    method: str
+    title: str
+    abstract: str
+    prediction: ClassifyResponse
+    matches: list[ScoredDocument]
+
+
+class UploadCompareRequest(UploadText):
+    doc_id: str
+
+
+class UploadCompareResponse(BaseModel):
+    b: DocumentSummary
+    similarity: float
+    predicted_domain: str
+    same_domain: bool
+
+
+class UploadExplainRequest(UploadText):
+    doc_id: str

@@ -56,7 +56,7 @@ export default function Search() {
           className="min-w-0 flex-1 rounded-lg border border-line bg-surface px-3 py-2.5 text-ink placeholder:text-muted focus:outline-2 focus:outline-accent"
           aria-label="Search query"
         />
-        <button className="rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-white hover:opacity-90">Search</button>
+        <button className="btn-primary rounded-lg px-4 py-2.5 text-sm font-medium">Search</button>
       </form>
 
       <div className="flex flex-wrap items-end gap-3">
@@ -77,7 +77,7 @@ export default function Search() {
         <div className="flex flex-wrap gap-2">
           {EXAMPLES.map((e) => (
             <button key={e} onClick={() => { setText(e); set({ q: e }); }}
-              className="rounded-full border border-line bg-surface px-3 py-1 text-sm text-ink-2 hover:bg-surface-2">
+              className="rounded-full border border-line bg-surface px-3 py-1 text-sm text-ink-2 hover:border-accent hover:bg-surface-2 hover:text-ink">
               {e}
             </button>
           ))}

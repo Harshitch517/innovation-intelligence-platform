@@ -8,3 +8,7 @@ fastembed
 numpy
 requests
 python-dotenv
+# Document upload (/analyze): local text extraction, no LLM
+pypdf
+python-docx
+python-multipart

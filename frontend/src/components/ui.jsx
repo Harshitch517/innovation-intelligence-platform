@@ -50,7 +50,7 @@ export function ChartCard({ title, subtitle, columns, rows, children, className 
         rows?.length ? (
           <button
             onClick={() => setTable((t) => !t)}
-            className="rounded-md border border-line px-2 py-1 text-xs text-ink-2 hover:bg-surface-2"
+            className="rounded-md border border-line px-2 py-1 text-xs text-ink-2 hover:border-accent hover:bg-surface-2 hover:text-ink"
             aria-pressed={table}
           >
             {table ? "Chart" : "Table"}
@@ -149,21 +149,33 @@ export function DocCard({ doc, children }) {
   );
 }
 
-// "Explain" button: asks the API (Gemini, cached) why two documents are similar.
-export function Explain({ a, b }) {
+// "Explain" button: asks the API why two documents are similar (answers are cached server-side).
+// `load` overrides the request, e.g. to explain an uploaded document against a database one.
+export function Explain({ a, b, load }) {
   const [state, setState] = useState({ status: "idle" });
   const run = () => {
     setState({ status: "loading" });
-    api.explain(a, b).then((r) => setState({ status: "done", ...r })).catch((e) => setState({ status: "error", error: e }));
+    (load ? load() : api.explain(a, b))
+      .then((r) => setState({ status: "done", ...r }))
+      .catch((e) => setState({ status: "error", error: e }));
   };
   if (state.status === "idle")
-    return <button onClick={run} className="text-xs font-medium text-accent hover:underline">Explain similarity</button>;
-  if (state.status === "loading") return <span className="text-xs text-muted">Asking Gemini…</span>;
+    return (
+      <button onClick={run} className="btn-link text-xs font-medium text-accent">
+        Explain similarity
+      </button>
+    );
+  if (state.status === "loading")
+    return (
+      <span className="inline-flex items-center gap-2 text-xs text-muted" role="status">
+        <span className="h-3 w-3 animate-spin rounded-full border-2 border-line border-t-accent" /> Analyzing…
+      </span>
+    );
   if (state.status === "error") return <span className="text-xs text-critical">{state.error.message}</span>;
   return (
-    <div className="mt-2 rounded-md bg-surface-2 p-3 text-sm text-ink-2">
+    <div className="mt-2 rounded-md bg-surface-2 p-3 text-sm leading-relaxed text-ink-2">
+      <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted">Why they are similar</p>
       {state.explanation ?? <span className="text-muted">{state.note}</span>}
-      {state.explanation && <p className="mt-1 text-[11px] text-muted">{state.cached ? "cached" : "generated"} · {state.model}</p>}
     </div>
   );
 }

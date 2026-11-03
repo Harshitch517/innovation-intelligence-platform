@@ -34,12 +34,15 @@ def generate(prompt: str, max_tokens: int = 400, retries: int = 3) -> str | None
 
 
 def explain_similarity(a: dict, b: dict, score: float) -> str | None:
-    """One paragraph on why two documents are similar."""
+    """3-4 sentences on why two documents are similar. Inputs are trimmed and the answer is
+    capped so each call uses few tokens; callers cache the result."""
+    def describe(label: str, d: dict) -> str:
+        meta = ", ".join(x for x in (d.get("source"), d.get("institution_name"), str(d.get("year") or "")) if x)
+        return f"{label} ({meta}): {d['title']}\n{d['abstract'][:900]}"
+
     prompt = (
-        "Two innovation records are semantically similar (cosine similarity "
-        f"{score:.2f}). In 3-4 sentences, explain what technical ideas they share and how they differ. "
-        "Be specific and do not invent facts beyond the abstracts.\n\n"
-        f"A ({a['source']}, {a['institution_name']}, {a['year']}): {a['title']}\n{a['abstract'][:1500]}\n\n"
-        f"B ({b['source']}, {b['institution_name']}, {b['year']}): {b['title']}\n{b['abstract'][:1500]}"
+        f"Two innovation records are semantically similar (cosine similarity {score:.2f}). In 3-4 sentences, "
+        "explain what technical ideas they share and how they differ. Be specific; do not invent facts.\n\n"
+        f"{describe('A', a)}\n\n{describe('B', b)}"
     )
-    return generate(prompt)
+    return generate(prompt, max_tokens=220)
