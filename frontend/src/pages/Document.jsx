@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api";
 import { Card, DocCard, DomainBadge, Empty, ErrorBox, Explain, Loading, SourceBadge } from "../components/ui";
@@ -7,6 +7,7 @@ import { useApi } from "../lib/useApi";
 // The complete paper: shown inline when our server can fetch the PDF, otherwise a link out.
 function FullPaper({ id }) {
   const { data, error } = useApi(() => api.fullText(id), [id]);
+  const viewer = useRef(null);
   if (error) return null;
   if (!data) return <Card title="Full paper"><Loading label="Looking for the full text…" /></Card>;
   const open = data.url && (
@@ -16,8 +17,19 @@ function FullPaper({ id }) {
   );
   if (data.embeddable)
     return (
-      <Card title="Full paper" subtitle="Open-access PDF" action={<a href={data.url} target="_blank" rel="noreferrer" className="btn-link text-xs font-medium text-accent">Open in new tab ↗</a>}>
-        <iframe src={`${api.pdfUrl(id)}#view=FitH`} title="Full paper PDF" className="h-[85vh] w-full rounded-md border border-line bg-white" />
+      <Card
+        title="Full paper"
+        subtitle="Open-access PDF"
+        action={
+          <div className="flex items-center gap-3">
+            <button onClick={() => viewer.current?.requestFullscreen?.()} className="rounded-md border border-line px-2 py-1 text-xs font-medium text-ink-2 hover:border-accent hover:bg-surface-2 hover:text-ink">
+              ⛶ Full screen
+            </button>
+            <a href={data.url} target="_blank" rel="noreferrer" className="btn-link text-xs font-medium text-accent">Open in new tab ↗</a>
+          </div>
+        }
+      >
+        <iframe ref={viewer} src={`${api.pdfUrl(id)}#view=FitH`} title="Full paper PDF" allowFullScreen className="h-[85vh] w-full rounded-md border border-line bg-white" />
       </Card>
     );
   const note = data.kind === "patent" ? "The complete patent, with claims and drawings, is on Google Patents."
