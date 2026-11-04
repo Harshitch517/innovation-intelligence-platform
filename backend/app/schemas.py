@@ -41,6 +41,13 @@ class DocumentDetail(DocumentSummary):
     global_cluster: ClusterBrief | None
 
 
+class FullTextLinks(BaseModel):
+    kind: str                  # paper | patent
+    url: str | None            # best page to read the document in full
+    is_open_access: bool
+    embeddable: bool           # the PDF can be shown inline via /documents/{id}/pdf
+
+
 class SimilarResponse(BaseModel):
     doc_id: str
     results: list[ScoredDocument]

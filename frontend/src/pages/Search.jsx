@@ -38,9 +38,11 @@ export default function Search() {
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-semibold">Search innovations</h1>
-        <p className="mt-1 text-sm text-ink-2">
-          Natural-language search over 31,000+ university patents and research papers (including 1,169 from Indian institutions), ranked by semantic similarity.
-        </p>
+        {!q && (
+          <p className="mt-1 text-sm text-ink-2">
+            Natural-language search over 31,000+ university patents and research papers (including 1,169 from Indian institutions), ranked by semantic similarity.
+          </p>
+        )}
       </div>
       <form
         onSubmit={(e) => {

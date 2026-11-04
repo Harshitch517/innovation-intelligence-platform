@@ -115,14 +115,14 @@ Both the API and the website run on Render's free tier; the data lives in Supaba
 1. **Supabase (database):**
    - Create a project. Its pgvector extension is enabled by `schema.sql`.
    - Use the **Session pooler** connection string (`aws-0-<region>.pooler.supabase.com:5432`, user `postgres.<project-ref>`). The direct `db.<ref>.supabase.co` host is IPv6-only, which Render can't reach. Write `@` in the password as `%40`.
-   - With `DATABASE_URL` set to that string, run `python -m src.pipeline.load_db --trim`, then `python -m src.pipeline.name_clusters`.
+   - With `DATABASE_URL` set to that string, run `python -m src.pipeline.load_db`, then `python -m src.pipeline.name_clusters`.
    - The database takes about 160 MB of the 500 MB free limit.
 2. **Render (API and website):** create a Blueprint from this repository. `render.yaml` defines both services:
    - the API (`backend/`, Python): set `DATABASE_URL`, `GEMINI_API_KEY` and `ALLOWED_ORIGINS` (the website URL) in the Render dashboard. It uses about 220 MB of the 512 MB free limit.
    - the website (`frontend/`, a static site): `VITE_API_URL` points to the API, and every route is rewritten to `index.html`.
 3. **Smoke test:** check that search, similar, compare, explain, dashboard and network all work on the public URL. Render's free tier sleeps after 15 minutes idle, so open the site a minute before a demo.
 
-Pushing to `main` redeploys both services. To change the data, rerun the pipeline, then run `load_db --trim` and `name_clusters` against Supabase.
+Pushing to `main` redeploys both services. To change the data, rerun the pipeline, then run `load_db` and `name_clusters` against Supabase.
 
 ## Project status
 

@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import StreamingResponse
 
-from app.schemas import DocumentDetail, SimilarResponse
+from app.schemas import DocumentDetail, FullTextLinks, SimilarResponse
+from app.services import fulltext
 from app.services.db import fetch_all, fetch_one
 
 router = APIRouter(prefix="/documents", tags=["documents"])
@@ -23,6 +25,34 @@ def get_document(doc_id: str) -> dict:
     doc["cluster"] = clusters.get(doc["cluster_id"])
     doc["global_cluster"] = clusters.get(doc["global_cluster"])
     return doc
+
+
+def _source(doc_id: str) -> str:
+    row = fetch_one("SELECT source FROM documents WHERE doc_id = %s", (doc_id,))
+    if row is None:
+        raise HTTPException(404, "document not found")
+    return row["source"]
+
+
+@router.get("/{doc_id}/fulltext", response_model=FullTextLinks)
+def full_text(doc_id: str) -> dict:
+    """Where to read the complete document, and whether its PDF can be shown inline."""
+    if _source(doc_id) == "patent":
+        return {"kind": "patent", "url": fulltext.patent_url(doc_id), "is_open_access": True, "embeddable": False}
+    links = fulltext.paper_links(doc_id.removeprefix("PAP-"))
+    return {"kind": "paper", "url": links["url"], "is_open_access": links["is_open_access"], "embeddable": links["embeddable"]}
+
+
+@router.get("/{doc_id}/pdf")
+def pdf(doc_id: str) -> StreamingResponse:
+    """Stream a paper's open-access PDF (the URL comes from OpenAlex, never from the client)."""
+    if _source(doc_id) != "paper":
+        raise HTTPException(404, "no PDF for this document")
+    url = fulltext.paper_links(doc_id.removeprefix("PAP-"))["pdf_url"]
+    stream = fulltext.stream_pdf(url) if url and url.startswith("https://") else None
+    if stream is None:
+        raise HTTPException(404, "PDF not available")
+    return StreamingResponse(stream, media_type="application/pdf", headers={"Content-Disposition": "inline"})
 
 
 @router.get("/{doc_id}/similar", response_model=SimilarResponse)

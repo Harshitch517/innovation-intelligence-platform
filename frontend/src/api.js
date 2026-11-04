@@ -33,6 +33,8 @@ function query(params) {
 export const api = {
   search: (params) => request(`/search${query(params)}`),
   document: (id) => request(`/documents/${encodeURIComponent(id)}`),
+  fullText: (id) => request(`/documents/${encodeURIComponent(id)}/fulltext`),
+  pdfUrl: (id) => `${API_URL}/documents/${encodeURIComponent(id)}/pdf`,
   similar: (id, params) => request(`/documents/${encodeURIComponent(id)}/similar${query(params)}`),
   compare: (a, b) => request(`/compare${query({ a, b })}`),
   explain: (a, b) => request(`/explain${query({ a, b })}`),

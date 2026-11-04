@@ -141,3 +141,21 @@ def test_lpu_profile_and_search(client):
     assert d["country"] == "IN" and d["similar"] and d["recent_documents"]
     res = client.get("/search", params={"q": "intrusion detection", "institution": found[0]["institution"], "k": 5}).json()
     assert len(res["results"]) == 5 and all(r["institution_name"] == "Lovely Professional University" for r in res["results"])
+
+
+def test_full_text_links(client, sample, monkeypatch):
+    from app.services import fulltext
+
+    r = client.get(f"/documents/{sample['patent']}/fulltext").json()
+    assert r["kind"] == "patent" and r["url"].startswith("https://patents.google.com/patent/US") and not r["embeddable"]
+    assert client.get(f"/documents/{sample['patent']}/pdf").status_code == 404
+    assert client.get("/documents/PAP-NOPE/fulltext").status_code == 404
+
+    links = {"url": "https://x.org/a.pdf", "pdf_url": "https://x.org/a.pdf", "is_open_access": True, "embeddable": True}
+    monkeypatch.setattr(fulltext, "paper_links", lambda w: links)
+    assert client.get(f"/documents/{sample['paper']}/fulltext").json()["embeddable"]
+    monkeypatch.setattr(fulltext, "stream_pdf", lambda url: iter([b"%PDF-1.4 test"]))
+    r = client.get(f"/documents/{sample['paper']}/pdf")
+    assert r.status_code == 200 and r.headers["content-type"] == "application/pdf" and r.content.startswith(b"%PDF")
+    monkeypatch.setattr(fulltext, "stream_pdf", lambda url: None)
+    assert client.get(f"/documents/{sample['paper']}/pdf").status_code == 404

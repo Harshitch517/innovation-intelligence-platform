@@ -4,6 +4,33 @@ import { api } from "../api";
 import { Card, DocCard, DomainBadge, Empty, ErrorBox, Explain, Loading, SourceBadge } from "../components/ui";
 import { useApi } from "../lib/useApi";
 
+// The complete paper: shown inline when our server can fetch the PDF, otherwise a link out.
+function FullPaper({ id }) {
+  const { data, error } = useApi(() => api.fullText(id), [id]);
+  if (error) return null;
+  if (!data) return <Card title="Full paper"><Loading label="Looking for the full text…" /></Card>;
+  const open = data.url && (
+    <a href={data.url} target="_blank" rel="noreferrer" className="btn-primary inline-block rounded-md px-3 py-1.5 text-sm font-medium">
+      {data.kind === "patent" ? "View full patent" : "Read full paper"} ↗
+    </a>
+  );
+  if (data.embeddable)
+    return (
+      <Card title="Full paper" subtitle="Open-access PDF" action={<a href={data.url} target="_blank" rel="noreferrer" className="btn-link text-xs font-medium text-accent">Open in new tab ↗</a>}>
+        <iframe src={`${api.pdfUrl(id)}#view=FitH`} title="Full paper PDF" className="h-[85vh] w-full rounded-md border border-line bg-white" />
+      </Card>
+    );
+  const note = data.kind === "patent" ? "The complete patent, with claims and drawings, is on Google Patents."
+    : !data.url ? "No online copy was found for this paper."
+    : data.is_open_access ? "This paper is free to read on the publisher's site."
+    : "This paper is on the publisher's site and may need a subscription.";
+  return (
+    <Card title={data.kind === "patent" ? "Full patent" : "Full paper"}>
+      <div className="flex flex-wrap items-center gap-3"><p className="flex-1 text-sm text-ink-2">{note}</p>{open}</div>
+    </Card>
+  );
+}
+
 function ClusterChip({ cluster, label }) {
   if (!cluster) return null;
   return (
@@ -41,6 +68,7 @@ export default function Document() {
         <Card title="Abstract">
           <p className="text-sm leading-relaxed text-ink-2">{d.abstract}</p>
         </Card>
+        <FullPaper key={id} id={id} />
         <div className="grid gap-3 sm:grid-cols-2">
           <ClusterChip cluster={d.cluster} label="Sub-area" />
           <ClusterChip cluster={d.global_cluster} label="Global cluster" />
