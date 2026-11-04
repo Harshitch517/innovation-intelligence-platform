@@ -151,11 +151,14 @@ def test_full_text_links(client, sample, monkeypatch):
     assert client.get(f"/documents/{sample['patent']}/pdf").status_code == 404
     assert client.get("/documents/PAP-NOPE/fulltext").status_code == 404
 
-    links = {"url": "https://x.org/a.pdf", "pdf_url": "https://x.org/a.pdf", "is_open_access": True, "embeddable": True}
+    links = {"url": "https://x.org/a.pdf", "pdf_url": "https://x.org/a.pdf", "is_open_access": True, "embeddable": True,
+             "authors": ["A. Author"], "author_count": 1, "venue": "A Journal", "cited_by_count": 3}
     monkeypatch.setattr(fulltext, "paper_links", lambda w: links)
-    assert client.get(f"/documents/{sample['paper']}/fulltext").json()["embeddable"]
-    monkeypatch.setattr(fulltext, "stream_pdf", lambda url: iter([b"%PDF-1.4 test"]))
+    body = client.get(f"/documents/{sample['paper']}/fulltext").json()
+    assert body["embeddable"] and body["authors"] == ["A. Author"] and body["venue"] == "A Journal"
+    monkeypatch.setattr(fulltext, "stream_pdf", lambda url: (iter([b"%PDF-1.4 test"]), 13))
     r = client.get(f"/documents/{sample['paper']}/pdf")
     assert r.status_code == 200 and r.headers["content-type"] == "application/pdf" and r.content.startswith(b"%PDF")
+    assert r.headers["content-length"] == "13"
     monkeypatch.setattr(fulltext, "stream_pdf", lambda url: None)
     assert client.get(f"/documents/{sample['paper']}/pdf").status_code == 404

@@ -1,6 +1,7 @@
 """/documents/{doc_id} and /documents/{doc_id}/similar."""
 from __future__ import annotations
 
+import requests
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
 
@@ -39,8 +40,11 @@ def full_text(doc_id: str) -> dict:
     """Where to read the complete document, and whether its PDF can be shown inline."""
     if _source(doc_id) == "patent":
         return {"kind": "patent", "url": fulltext.patent_url(doc_id), "is_open_access": True, "embeddable": False}
-    links = fulltext.paper_links(doc_id.removeprefix("PAP-"))
-    return {"kind": "paper", "url": links["url"], "is_open_access": links["is_open_access"], "embeddable": links["embeddable"]}
+    try:
+        links = fulltext.paper_links(doc_id.removeprefix("PAP-"))
+    except requests.RequestException as e:
+        raise HTTPException(502, "Paper details are unavailable right now. Please try again.") from e
+    return {"kind": "paper", **links}
 
 
 @router.get("/{doc_id}/pdf")
@@ -48,11 +52,18 @@ def pdf(doc_id: str) -> StreamingResponse:
     """Stream a paper's open-access PDF (the URL comes from OpenAlex, never from the client)."""
     if _source(doc_id) != "paper":
         raise HTTPException(404, "no PDF for this document")
-    url = fulltext.paper_links(doc_id.removeprefix("PAP-"))["pdf_url"]
-    stream = fulltext.stream_pdf(url) if url and url.startswith("https://") else None
-    if stream is None:
+    try:
+        url = fulltext.paper_links(doc_id.removeprefix("PAP-"))["pdf_url"]
+    except requests.RequestException as e:
+        raise HTTPException(502, "PDF not available") from e
+    opened = fulltext.stream_pdf(url) if url and url.startswith("https://") else None
+    if opened is None:
         raise HTTPException(404, "PDF not available")
-    return StreamingResponse(stream, media_type="application/pdf", headers={"Content-Disposition": "inline"})
+    stream, length = opened
+    headers = {"Content-Disposition": "inline"}
+    if length:
+        headers["Content-Length"] = str(length)  # lets the site show a download percentage
+    return StreamingResponse(stream, media_type="application/pdf", headers=headers)
 
 
 @router.get("/{doc_id}/similar", response_model=SimilarResponse)

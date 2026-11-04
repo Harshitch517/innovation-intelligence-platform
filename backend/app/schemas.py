@@ -46,6 +46,15 @@ class FullTextLinks(BaseModel):
     url: str | None            # best page to read the document in full
     is_open_access: bool
     embeddable: bool           # the PDF can be shown inline via /documents/{id}/pdf
+    oa_status: str | None = None
+    doi: str | None = None
+    venue: str | None = None
+    publication_date: str | None = None
+    work_type: str | None = None
+    authors: list[str] = []
+    author_count: int = 0
+    cited_by_count: int | None = None
+    references_count: int | None = None
 
 
 class SimilarResponse(BaseModel):
