@@ -1,0 +1,35 @@
+{
+  "loaded": 1804,
+  "dropped_already_in_main_dataset": 111,
+  "dropped_short_or_missing_abstract": 20,
+  "dropped_non_english_abstract": 86,
+  "dropped_duplicate_title": 0,
+  "final": 1200,
+  "seed": 43,
+  "by_domain": {
+    "Artificial Intelligence": 240,
+    "Cybersecurity": 240,
+    "Healthcare": 240,
+    "Renewable Energy": 240,
+    "Robotics": 240
+  },
+  "by_country": {
+    "CN": 315,
+    "US": 137,
+    "IN": 82,
+    "ID": 40,
+    "GB": 37,
+    "DE": 35,
+    "KR": 33,
+    "JP": 25,
+    "AU": 24,
+    "IT": 24,
+    "CA": 23,
+    "UA": 19,
+    "PL": 18,
+    "SA": 18,
+    "RU": 17
+  },
+  "countries": 82,
+  "institutions": 890
+}

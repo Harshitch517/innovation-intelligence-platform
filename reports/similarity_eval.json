@@ -24,11 +24,5 @@
     "precision@10": 0.0004,
     "recall@10": 0.0005,
     "mrr": 0.0014
-  },
-  "cross_institution": {
-    "threshold": 0.59,
-    "rule": "lowest score where >=95% of cross-institution neighbour pairs share a domain",
-    "pairs_flagged": 121774,
-    "same_domain_share": 0.9526
   }
 }

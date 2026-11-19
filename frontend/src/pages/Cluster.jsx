@@ -33,7 +33,7 @@ export default function Cluster() {
         )}
         <p className="mt-2 text-xs text-muted">Keywords: {data.keywords.join(", ")}</p>
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4">
         <ChartCard title="Documents per year" columns={["Year", "Documents"]} rows={rows.map((r) => [r.year, r.count])}>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={rows} margin={{ left: 0, right: 8 }}>
@@ -45,16 +45,6 @@ export default function Cluster() {
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
-        <Card title="Leading institutions">
-          <ul className="space-y-1.5">
-            {data.top_institutions.map((t) => (
-              <li key={t.institution} className="flex justify-between gap-2 text-sm">
-                <Link to={`/institutions?ids=${encodeURIComponent(t.institution)}`} className="text-ink-2 hover:text-accent">{t.name}</Link>
-                <span className="tabular text-xs text-muted">{t.count}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
       </div>
       <div className="space-y-3">
         <h2 className="text-sm font-semibold">Recent documents</h2>

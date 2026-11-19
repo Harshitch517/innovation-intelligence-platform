@@ -3,8 +3,8 @@
 
 CREATE EXTENSION IF NOT EXISTS vector;
 
-DROP TABLE IF EXISTS institution_edges, institution_similarity, institutions,
-    trends, documents, clusters CASCADE;
+DROP TABLE IF EXISTS institution_edges, institution_similarity, institutions;  -- removed tables (older loads)
+DROP TABLE IF EXISTS trends, documents, clusters CASCADE;
 
 CREATE TABLE clusters (
     cluster_id     text PRIMARY KEY,          -- "G-12" (global) or "HC-3" (sub-area of a domain)
@@ -26,19 +26,18 @@ CREATE TABLE documents (
     source           text NOT NULL,           -- patent | paper
     title            text NOT NULL,
     abstract         text NOT NULL,
-    institution      text NOT NULL,           -- normalised key
+    institution      text NOT NULL,           -- normalised key (metadata only)
     institution_name text NOT NULL,           -- display name
     country          text,
     year             integer NOT NULL,
     domain           text NOT NULL,
     raw_codes        text[] NOT NULL,         -- CPC codes or OpenAlex topic IDs (never a model input)
-    split            text NOT NULL,           -- train | val | test
+    split            text NOT NULL,           -- train | val | test | extra (supplement)
     global_cluster   text REFERENCES clusters (cluster_id),
     cluster_id       text REFERENCES clusters (cluster_id),   -- sub-area within the domain
     embedding        vector(384) NOT NULL     -- MiniLM, L2-normalised
 );
 CREATE INDEX documents_domain_year ON documents (domain, year);
-CREATE INDEX documents_institution ON documents (institution);
 CREATE INDEX documents_cluster ON documents (cluster_id);
 
 CREATE TABLE trends (
@@ -48,34 +47,6 @@ CREATE TABLE trends (
     PRIMARY KEY (cluster_id, year)
 );
 
-CREATE TABLE institutions (
-    institution   text PRIMARY KEY,
-    name          text NOT NULL,
-    country       text,
-    documents     integer NOT NULL,
-    patents       integer NOT NULL,
-    papers        integer NOT NULL,
-    top_domain    text NOT NULL,
-    by_domain     jsonb NOT NULL,
-    by_year       jsonb NOT NULL,
-    top_clusters  text[] NOT NULL,
-    similar_institutions text[] NOT NULL   -- top 5 by profile similarity
-);
-
-CREATE TABLE institution_similarity (
-    institution          text REFERENCES institutions (institution),
-    similar_institution  text REFERENCES institutions (institution),
-    similarity           real NOT NULL,
-    PRIMARY KEY (institution, similar_institution)
-);
-
-CREATE TABLE institution_edges (
-    source           text REFERENCES institutions (institution),
-    target           text REFERENCES institutions (institution),
-    similarity       real NOT NULL,
-    shared_clusters  integer NOT NULL,
-    PRIMARY KEY (source, target)
-);
 
 -- Kept across reloads: cached AI explanations are expensive to regenerate.
 CREATE TABLE IF NOT EXISTS explanations_cache (

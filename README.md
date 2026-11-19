@@ -17,7 +17,6 @@ INT395 project. The platform analyses 30,000 patents and research papers from un
 | Similarity detection | MiniLM: MRR 0.21 and Recall@10 0.19 (citation or CPC-subgroup ground truth), ahead of SPECTER2, TF-IDF and random |
 | Clustering | 94 global clusters and 161 named sub-areas; NMI 0.48 against the domain labels |
 | Emerging technologies | Ranked by 2024–25 vs 2022–23 growth. The back-test hit rate is 0.70 against a 0.69 base rate, i.e. no predictive lift (reported as is). |
-| Institutions | 605 profiles, similarity scores, and a network of 2,210 links |
 
 ## Architecture
 
@@ -31,10 +30,10 @@ flowchart LR
     F & P --> C[clean] --> E[embed<br/>MiniLM, SPECTER2]
     E --> T[train_classifier]
     E --> S[similarity]
-    E --> K[cluster<br/>BERTopic] --> TR[trends] --> I[institutions]
+    E --> K[cluster<br/>BERTopic] --> TR[trends]
     K --> G[name_clusters<br/>Gemini]
   end
-  T & S & I & G --> L[load_db] --> DB[(PostgreSQL + pgvector<br/>Supabase)]
+  T & S & TR & G --> L[load_db] --> DB[(PostgreSQL + pgvector<br/>Supabase)]
   subgraph Online["Online (free hosting)"]
     DB --> API[FastAPI + fastembed<br/>Render]
     API --> UI[React dashboard<br/>Render static site]
@@ -51,11 +50,11 @@ Only the user's search query (and a `/classify` input) is embedded live, by fast
 | Database | PostgreSQL 17 + pgvector (HNSW) | Docker locally; Supabase online |
 | Backend | FastAPI, fastembed (ONNX, no PyTorch), psycopg | Render (free) |
 | LLM features | Gemini API (`gemini-3.5-flash-lite`) | Offline + on demand, with fallbacks |
-| Frontend | React, Vite, Tailwind, Recharts, Cytoscape.js | Render static site (free) |
+| Frontend | React, Vite, Tailwind, Recharts | Render static site (free) |
 
 ## Data sources
 
-**India supplement.** 1,169 extra papers from Indian universities and institutes, including all 401 matching Lovely Professional University papers (`python -m src.pipeline.supplement_india`). They are searchable and comparable, and they appear in clusters and institution profiles. They are kept out of the 30,000-document evaluation set, so the classifier scores and the trend back-test are unchanged. Google Patents has only about 90 Indian university patents for 2020–2025, so no Indian patents were added.
+**Random supplement.** 1,200 extra papers drawn at random from OpenAlex worldwide (seed 43, 240 per domain, 82 countries; no country or institution filter): `python -m src.pipeline.supplement`. They are searchable and comparable and are assigned to the existing clusters. They are kept out of the 30,000-document evaluation set, so the classifier scores and the trend back-test are unchanged.
 
 | Source | Gives | Access |
 |---|---|---|
@@ -90,7 +89,7 @@ python -m src.pipeline.train_classifier        # 4 model families incl. SciBERT 
 python -m src.pipeline.similarity              # FAISS index, retrieval + search evaluation
 python -m src.pipeline.cluster                 # BERTopic clusters and sub-areas
 python -m src.pipeline.trends                  # emerging list + back-test
-python -m src.pipeline.institutions            # profiles, similarity, network
+python -m src.pipeline.supplement              # 1,200 random extra papers (search only)
 docker run -d --name innovation-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=innovation -p 5432:5432 -v innovation_pgdata:/var/lib/postgresql/data pgvector/pgvector:pg17
 python -m src.pipeline.load_db                 # schema + data + HNSW index, FAISS check
 python -m src.pipeline.name_clusters           # Gemini names and summaries (cached)
@@ -135,7 +134,7 @@ Pushing to `main` redeploys both services. To change the data, rerun the pipelin
 | 4 — Supervised classification | done (SciBERT test macro F1 0.954; served MiniLM+LR 0.923) |
 | 5 — Similarity and semantic search | done (search P@10 0.97, MiniLM MRR 0.21) |
 | 6 — Innovation clustering | done (94 global clusters, 161 sub-areas, NMI 0.48) |
-| 7 — Emerging technologies and institutions | done (605 institutions, back-test reported) |
+| 7 — Emerging technologies | done (back-test reported) |
 | 8 — Database | done (pgvector HNSW top-10 = FAISS for 100/100 test docs) |
 | 9 — Backend API | done (13 endpoints, 14 API tests pass) |
 | 10 — Frontend dashboard | done (6 pages + cluster page, light/dark, phone layout) |
@@ -147,8 +146,6 @@ Pushing to `main` redeploys both services. To change the data, rerun the pipelin
 | Search | Document and similar innovations |
 |---|---|
 | ![Search](docs/screenshots/search.png) | ![Document](docs/screenshots/document.png) |
-| **Institutions** | **Network (dark mode)** |
-| ![Institutions](docs/screenshots/institutions.png) | ![Network](docs/screenshots/network-dark.png) |
 
 ## Repository layout
 
@@ -156,9 +153,9 @@ Pushing to `main` redeploys both services. To change the data, rerun the pipelin
 PLAN.md            implementation plan (+ Section 10: changes made during the build)
 config.yaml        shared settings (domains, CPC map, OpenAlex topics, years, paths, models)
 src/pipeline/      fetch_papers, fetch_patents, clean, embed, train_classifier, similarity,
-                   cluster, trends, institutions, load_db, name_clusters
+                   cluster, trends, supplement, load_db, name_clusters
 scripts/           check_env, check_gemini, build_notebook, export_classifier, make_report
-notebooks/         01 exploration, 02 classification, 03 similarity, 04 clustering, 05 trends/institutions
+notebooks/         01 exploration, 02 classification, 03 similarity, 04 clustering, 05 trends
 backend/           FastAPI app (routers, services, schema.sql) and API tests
 frontend/          React + Vite dashboard
 tests/             unit tests for cleaning and labelling

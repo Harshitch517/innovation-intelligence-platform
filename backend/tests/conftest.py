@@ -19,9 +19,7 @@ def client() -> TestClient:
 
 @pytest.fixture(scope="session")
 def sample() -> dict:
-    """A patent, a paper, a sub-area and the largest institution from the loaded database."""
-    patent = fetch_one("SELECT doc_id, cluster_id, institution FROM documents WHERE source = 'patent' ORDER BY doc_id LIMIT 1")
+    """A patent, a paper and a sub-area from the loaded database."""
+    patent = fetch_one("SELECT doc_id, cluster_id FROM documents WHERE source = 'patent' ORDER BY doc_id LIMIT 1")
     paper = fetch_one("SELECT doc_id FROM documents WHERE source = 'paper' ORDER BY doc_id LIMIT 1")
-    inst = fetch_one("SELECT institution FROM institutions ORDER BY documents DESC LIMIT 1")
-    return {"patent": patent["doc_id"], "paper": paper["doc_id"], "cluster": patent["cluster_id"],
-            "institution": inst["institution"]}
+    return {"patent": patent["doc_id"], "paper": paper["doc_id"], "cluster": patent["cluster_id"]}

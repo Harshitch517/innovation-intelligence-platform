@@ -1,8 +1,7 @@
 """Phase 8: load every precomputed result into PostgreSQL + pgvector.
 
 Runs backend/schema.sql (drops and recreates the tables), loads clusters, documents with their
-MiniLM embeddings, trends, institutions, institution similarity and network edges, then builds
-an HNSW index on the embeddings (cosine distance).
+MiniLM embeddings and trends, then builds an HNSW index on the embeddings (cosine distance).
 
 Check (PLAN.md Phase 8): for test documents, the database's top-10 nearest neighbours are
 compared with the FAISS index from Phase 5.
@@ -25,7 +24,6 @@ import numpy as np
 import pandas as pd
 import psycopg
 from pgvector.psycopg import register_vector
-from psycopg.types.json import Jsonb
 
 from src.config import ROOT, get_key, load_config, path
 
@@ -47,13 +45,10 @@ def load(conn: psycopg.Connection, trim: bool) -> dict:
     out = path("outputs")
     from src.pipeline.corpus import load_all
 
-    docs, vectors = load_all()  # main dataset + India supplement (split = "extra")
+    docs, vectors = load_all()  # main dataset + random supplement (split = "extra")
     clusters = pd.read_parquet(out / "clusters.parquet")
     emerging = pd.read_parquet(out / "emerging.parquet").set_index("cluster_id")
     growth_all = pd.read_parquet(out / "trends.parquet")
-    inst = pd.read_parquet(out / "institutions.parquet")
-    sim = pd.read_parquet(out / "institution_similarity.parquet")
-    network = json.loads((out / "institution_network.json").read_text(encoding="utf-8"))
 
     with conn.cursor() as cur:
         cur.execute((ROOT / "backend" / "schema.sql").read_text(encoding="utf-8"))
@@ -73,23 +68,13 @@ def load(conn: psycopg.Connection, trim: bool) -> dict:
         with cur.copy("COPY trends (cluster_id, year, count) FROM STDIN") as cp:
             for r in growth_all.itertuples():
                 cp.write_row((r.cluster_id, int(r.year), int(r.count)))
-        with cur.copy("COPY institutions (institution, name, country, documents, patents, papers, top_domain, by_domain, by_year, top_clusters, similar_institutions) FROM STDIN") as cp:
-            for r in inst.itertuples():
-                cp.write_row((r.institution, r.name, r.country or None, int(r.documents), int(r.patents), int(r.papers), r.top_domain,
-                              Jsonb(json.loads(r.by_domain)), Jsonb(json.loads(r.by_year)), list(r.top_clusters), list(r.similar)))
-        with cur.copy("COPY institution_similarity (institution, similar_institution, similarity) FROM STDIN") as cp:
-            for r in sim.itertuples():
-                cp.write_row((r.institution, r.similar_institution, float(r.similarity)))
-        with cur.copy("COPY institution_edges (source, target, similarity, shared_clusters) FROM STDIN") as cp:
-            for e in network["edges"]:
-                cp.write_row((e["source"], e["target"], float(e["similarity"]), int(e["shared_clusters"])))
         start = time.perf_counter()
         cur.execute("CREATE INDEX documents_embedding_hnsw ON documents USING hnsw (embedding vector_cosine_ops) WITH (m = 16, ef_construction = 64)")
         hnsw_seconds = round(time.perf_counter() - start, 1)
         cur.execute("ANALYZE")
     conn.commit()
     counts = {}
-    for table in ("clusters", "documents", "trends", "institutions", "institution_similarity", "institution_edges"):
+    for table in ("clusters", "documents", "trends"):
         counts[table] = conn.execute(f"SELECT count(*) FROM {table}").fetchone()[0]
     counts["hnsw_build_seconds"] = hnsw_seconds
     counts["clusters_named"] = apply_cluster_names(conn)

@@ -1,16 +1,15 @@
 # %% [markdown]
-# # 05 · Emerging technologies and institutions
+# # 05 · Emerging technologies
 #
 # Sub-area (domain cluster) counts per year, the emerging list ranked by recent growth, the
-# back-test of the detection rule, and institution profiles, similarity and network.
-# Produced by `python -m src.pipeline.trends` and `python -m src.pipeline.institutions`.
+# back-test of the detection rule.
+# Produced by `python -m src.pipeline.trends`.
 
 # %%
 import json
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import networkx as nx
 import pandas as pd
 import seaborn as sns
 
@@ -21,8 +20,6 @@ trends = pd.read_parquet(out / "trends.parquet")
 emerging = pd.read_parquet(out / "emerging.parquet")
 domain_trends = pd.read_parquet(out / "domain_trends.parquet")
 bt = json.loads(Path("reports/trend_backtest.json").read_text())
-inst = pd.read_parquet(out / "institutions.parquet")
-net = json.loads((out / "institution_network.json").read_text())
 
 # %% [markdown]
 # ## Domain volume over time (patents and papers)
@@ -62,42 +59,3 @@ plt.tight_layout(); plt.savefig(FIG / "emerging_series.png", dpi=150); plt.show(
 # %%
 pd.Series({k: bt[k] for k in ("eligible_clusters", "flagged", "hit_rate", "base_rate_not_flagged",
                                "mean_later_growth_flagged", "mean_later_growth_not_flagged")})
-
-# %% [markdown]
-# ## Institutions
-# Profiles cover institutions with at least 10 documents. Similarity is the cosine between their
-# mean embeddings.
-
-# %%
-print(f"{len(inst)} institutions profiled; {len(net['edges'])} network edges (rule: {net['rule']})")
-inst.sort_values("documents", ascending=False).head(10)[["name", "country", "documents", "patents", "papers", "top_domain"]]
-
-# %%
-sim = pd.read_parquet(out / "institution_similarity.parquet")
-names = inst.set_index("institution")["name"]
-example = inst.sort_values("documents", ascending=False).iloc[0]["institution"]
-print("Most similar to", names[example])
-sim[sim["institution"] == example].assign(name=lambda t: t["similar_institution"].map(names))[["name", "similarity"]]
-
-# %% [markdown]
-# ## Institution network
-# Nodes coloured by their main domain; the largest connected component is drawn.
-
-# %%
-G = nx.Graph()
-for n in net["nodes"]:
-    G.add_node(n["id"], **n)
-for e in net["edges"]:
-    G.add_edge(e["source"], e["target"], weight=e["similarity"])
-core = G.subgraph(max(nx.connected_components(G), key=len))
-palette = dict(zip(sorted({d["top_domain"] for _, d in core.nodes(data=True)}), sns.color_palette("tab10")))
-pos = nx.spring_layout(core, seed=42, k=0.15)
-fig, ax = plt.subplots(figsize=(10, 8))
-nx.draw_networkx_edges(core, pos, alpha=0.08, ax=ax)
-nx.draw_networkx_nodes(core, pos, node_size=[min(200, d["documents"]) for _, d in core.nodes(data=True)],
-                       node_color=[palette[d["top_domain"]] for _, d in core.nodes(data=True)], ax=ax)
-for dom, col in palette.items():
-    ax.scatter([], [], color=col, label=dom)
-ax.legend(loc="lower left"); ax.set_axis_off(); ax.set_title(f"Institution network ({core.number_of_nodes()} nodes)")
-plt.tight_layout(); plt.savefig(FIG / "institution_network.png", dpi=150); plt.show()
-pd.Series(dict(nx.degree(core))).nlargest(8).rename(index=names)

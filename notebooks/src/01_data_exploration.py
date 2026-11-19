@@ -52,15 +52,9 @@ plt.tight_layout(); plt.savefig(FIG / "documents_per_year.png", dpi=150); plt.sh
 per_year
 
 # %% [markdown]
-# ## Top institutions and countries
+# ## Countries
 
 # %%
-top = df.groupby("institution_name").size().nlargest(15).sort_values()
-ax = top.plot.barh(figsize=(8, 5), color="#55A868")
-ax.set_xlabel("documents"); ax.set_ylabel(""); ax.set_title("Top 15 institutions")
-plt.tight_layout(); plt.savefig(FIG / "top_institutions.png", dpi=150); plt.show()
-both = df.groupby("institution")["source"].nunique()
-print(f"Institutions with both patents and papers: {(both == 2).sum():,} of {len(both):,}")
 df["country"].value_counts().head(10)
 
 # %% [markdown]

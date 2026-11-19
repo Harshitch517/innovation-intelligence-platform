@@ -39,7 +39,9 @@ def main() -> None:
     """Write the report."""
     cfg = load_config()
     clean, cls, sim, search = load("cleaning_summary.json"), load("classification.json"), load("similarity_eval.json"), load("search_eval.json")
-    clu, bt, inst, db, emb = load("clustering_eval.json"), load("trend_backtest.json"), load("institutions_summary.json"), load("db_check.json"), load("embedding_runs.json")
+    clu, bt, db, emb = load("clustering_eval.json"), load("trend_backtest.json"), load("db_check.json"), load("embedding_runs.json")
+    supp_file = R / "supplement.json"
+    supp = json.loads(supp_file.read_text(encoding="utf-8")) if supp_file.exists() else None
     patents, papers = load("fetch_patents_counts.json"), load("fetch_papers_counts.json")
     names_file = path("outputs") / "cluster_names.json"
     names = json.loads(names_file.read_text(encoding="utf-8")) if names_file.exists() else {}
@@ -63,6 +65,9 @@ def main() -> None:
         f"{clean['dropped_non_english_abstract']:,} non-English abstracts and {clean['dropped_duplicate_title']:,} duplicate titles removed.",
         f"- **Final dataset:** {fin['documents']:,} documents, {fin['institutions']:,} institutions; largest domain share "
         f"{fin['max_domain_share']:.0%}; splits {fin['splits']['train']:,} / {fin['splits']['val']:,} / {fin['splits']['test']:,} (stratified, seed {cfg['seed']}).",
+        *([f"- **Supplement:** {supp['final']:,} more papers drawn at random from OpenAlex worldwide (seed {supp['seed']}, "
+           f"{supp['countries']} countries, no country or institution filter). They are searchable and assigned to the existing clusters, "
+           "but kept out of every evaluation below."] if supp else []),
         "",
         table(pd.DataFrame([{"domain": k.split("|")[0], "source": k.split("|")[1], "documents": v} for k, v in fin["by_domain_source"].items()])
               .pivot(index="domain", columns="source", values="documents").reset_index()),
@@ -115,9 +120,6 @@ def main() -> None:
         f"**Semantic search:** Precision@10 = {search['precision@10']:.2f} over {search['queries']} hand-written queries "
         f"(per domain: {', '.join(f'{d} {v:.2f}' for d, v in search['by_domain'].items())}).",
         "",
-        f"**Cross-institution similarity:** threshold {sim['cross_institution']['threshold']} ({sim['cross_institution']['rule']}); "
-        f"{sim['cross_institution']['pairs_flagged']:,} pairs flagged.",
-        "",
         f"**Database check:** pgvector HNSW top-10 identical to FAISS for {db['faiss_check']['identical_top10_share']:.0%} of "
         f"{db['faiss_check']['test_documents']} test documents (median query {db['faiss_check']['median_query_ms']} ms).",
         "",
@@ -150,15 +152,7 @@ def main() -> None:
         "",
         "![Emerging](figures/emerging_top10.png)",
         "",
-        "## 7. Institutions",
-        "",
-        f"{inst['institutions_profiled']} institutions with at least {inst['min_docs']} documents are profiled (mean embedding). "
-        f"Network: {inst['edges']:,} edges (similarity >= {inst['edge_threshold']} or >= 3 shared sub-areas, at most 8 per node). "
-        f"Most connected: {', '.join(inst['most_connected'])}.",
-        "",
-        "![Network](figures/institution_network.png)",
-        "",
-        "## 8. Changes from the original plan",
+        "## 7. Changes from the original plan",
         "",
         "See PLAN.md Section 10 (patent source moved from PatentsView to BigQuery; hybrid text table to stay under the 200 GB "
         "query cap; US grants only; extended labelling rule; non-English abstracts removed; Gemini model switched to a lighter one).",

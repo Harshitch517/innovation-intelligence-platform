@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 
 // Domains in fixed categorical order (colour follows the domain everywhere in the app).
 export const DOMAINS = [
-  { name: "Artificial Intelligence", short: "AI", token: "--d-ai", shape: "ellipse" },
-  { name: "Healthcare", short: "Healthcare", token: "--d-hc", shape: "round-rectangle" },
-  { name: "Robotics", short: "Robotics", token: "--d-rb", shape: "triangle" },
-  { name: "Cybersecurity", short: "Cyber", token: "--d-cs", shape: "diamond" },
-  { name: "Renewable Energy", short: "Renewable", token: "--d-re", shape: "hexagon" },
+  { name: "Artificial Intelligence", short: "AI", token: "--d-ai" },
+  { name: "Healthcare", short: "Healthcare", token: "--d-hc" },
+  { name: "Robotics", short: "Robotics", token: "--d-rb" },
+  { name: "Cybersecurity", short: "Cyber", token: "--d-cs" },
+  { name: "Renewable Energy", short: "Renewable", token: "--d-re" },
 ];
-export const COMPARE_TOKENS = ["--c-1", "--c-2", "--c-3"];
 
 function readTokens() {
   const s = getComputedStyle(document.documentElement);
@@ -16,7 +15,6 @@ function readTokens() {
   const domain = Object.fromEntries(DOMAINS.map((d) => [d.name, get(d.token)]));
   return {
     domain,
-    compare: COMPARE_TOKENS.map(get),
     patent: get("--src-patent"),
     paper: get("--src-paper"),
     ink: get("--ink"),

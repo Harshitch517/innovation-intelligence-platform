@@ -1,19 +1,16 @@
 {
   "rows": {
     "clusters": 255,
-    "documents": 30000,
+    "documents": 31200,
     "trends": 966,
-    "institutions": 605,
-    "institution_similarity": 6050,
-    "institution_edges": 2210,
-    "hnsw_build_seconds": 4.8,
-    "clusters_named": 0
+    "hnsw_build_seconds": 4.1,
+    "clusters_named": 255
   },
   "faiss_check": {
     "test_documents": 100,
     "mean_top10_overlap": 1.0,
     "identical_top10_share": 1.0,
     "ef_search": 200,
-    "median_query_ms": 3.8
+    "median_query_ms": 3.9
   }
 }

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Design tokens. Chart colours follow the validated reference palette (dataviz skill):
-   domains use categorical slots 1-5 in fixed order; institution comparisons use slots 6-8. */
+   domains use categorical slots 1-5 in fixed order. */
 :root {
   color-scheme: light;
   --page: #f9f9f7;
@@ -23,9 +23,6 @@
   --d-rb: #1baf7a;
   --d-cs: #eda100;
   --d-re: #e87ba4;
-  --c-1: #008300;
-  --c-2: #6250d6;
-  --c-3: #e34948;
   --src-patent: #1c5cab;
   --src-paper: #86b6ef;
 }
@@ -50,9 +47,6 @@
     --d-rb: #199e70;
     --d-cs: #c98500;
     --d-re: #d55181;
-    --c-1: #008300;
-    --c-2: #9085e9;
-    --c-3: #e66767;
     --src-patent: #5598e7;
     --src-paper: #184f95;
   }

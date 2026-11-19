@@ -19,17 +19,15 @@ def _counts(rows: list[dict]) -> list[dict]:
 
 @router.get("/stats/overview", response_model=OverviewResponse)
 def overview() -> dict:
-    """Counts by domain, source and year; top institutions."""
+    """Counts by domain, source and year."""
     totals = fetch_one(
         "SELECT count(*) AS documents, count(*) FILTER (WHERE source = 'patent') AS patents, "
-        "count(*) FILTER (WHERE source = 'paper') AS papers, count(DISTINCT institution) AS institutions FROM documents")
+        "count(*) FILTER (WHERE source = 'paper') AS papers FROM documents")
     by = {col: _counts(fetch_all(f"SELECT {col} AS key, count(*) AS count FROM documents GROUP BY 1 ORDER BY 1"))
           for col in ("domain", "source", "year")}
     domain_year = fetch_all("SELECT domain, year, source, count(*) AS count FROM documents GROUP BY 1, 2, 3 ORDER BY 1, 2, 3")
-    top = fetch_all("SELECT institution, min(institution_name) AS name, count(*) AS count FROM documents "
-                    "GROUP BY institution ORDER BY count DESC LIMIT 15")
     return {**totals, "by_domain": by["domain"], "by_source": by["source"], "by_year": by["year"],
-            "by_domain_year": domain_year, "top_institutions": top}
+            "by_domain_year": domain_year}
 
 
 def _with_counts(clusters: list[dict]) -> list[dict]:
@@ -68,7 +66,7 @@ def clusters(scope: str | None = Query(None, pattern="^(global|domain)$"), domai
 
 @router.get("/clusters/{cluster_id}", response_model=ClusterDetail)
 def cluster(cluster_id: str, limit: int = Query(20, ge=1, le=200)) -> dict:
-    """One cluster with yearly counts, top institutions and member documents."""
+    """One cluster with yearly counts and member documents."""
     c = fetch_one(f"SELECT {CLUSTER_COLS}, sample_titles FROM clusters WHERE cluster_id = %s", (cluster_id,))
     if c is None:
         raise HTTPException(404, "cluster not found")
@@ -76,9 +74,6 @@ def cluster(cluster_id: str, limit: int = Query(20, ge=1, le=200)) -> dict:
     c["members"] = fetch_all(
         "SELECT doc_id, source, title, institution, institution_name, country, year, domain, cluster_id "
         f"FROM documents WHERE {col} = %s ORDER BY year DESC, doc_id LIMIT %s", (cluster_id, limit))
-    c["top_institutions"] = fetch_all(
-        f"SELECT institution, min(institution_name) AS name, count(*) AS count FROM documents WHERE {col} = %s "
-        "GROUP BY institution ORDER BY count DESC LIMIT 10", (cluster_id,))
     if c["scope"] == "domain":
         c = _with_counts([c])[0]
     else:

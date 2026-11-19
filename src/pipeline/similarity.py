@@ -7,12 +7,8 @@
   direction. Reports Precision@10, Recall@10 and MRR for MiniLM, SPECTER2 and a TF-IDF baseline.
 - Semantic search evaluation: Precision@10 on 20 hand-written queries (4 per domain), where a
   result counts as correct if its domain matches the query's intended domain.
-- Cross-institution pairs: nearest neighbours from a different institution whose similarity is
-  above a threshold chosen from the data (the lowest score at which at least 95% of such pairs
-  share a domain); see notebook 03.
 
-Outputs: models/faiss_minilm.index, reports/similarity_eval.json, reports/search_eval.json,
-         data/outputs/cross_institution_pairs.parquet
+Outputs: models/faiss_minilm.index, reports/similarity_eval.json, reports/search_eval.json
 
 Usage:
     python -m src.pipeline.similarity
@@ -92,23 +88,20 @@ class SimilarityIndex:
             out.append((int(r), float(s)))
             if len(out) == k:
                 break
-        res = self.docs.iloc[[r for r, _ in out]][["doc_id", "source", "title", "institution", "institution_name", "year", "domain"]].copy()
+        res = self.docs.iloc[[r for r, _ in out]][["doc_id", "source", "title", "institution_name", "year", "domain"]].copy()
         res["score"] = [round(s, 4) for _, s in out]
         return res.reset_index(drop=True)
 
     def similar(self, doc_id: str, k: int = 10) -> pd.DataFrame:
-        """Top-k most similar documents to `doc_id` (excluding itself), with cosine scores and
-        a flag for documents from other institutions."""
+        """Top-k most similar documents to `doc_id` (excluding itself), with cosine scores."""
         r = self.row[doc_id]
         scores, rows = self.index.search(self.vectors[r : r + 1], k + 1)
         keep = np.ones(len(self.docs), dtype=bool)
         keep[r] = False
-        res = self._results(scores[0], rows[0], k, keep)
-        res["other_institution"] = res["institution"] != self.docs.at[r, "institution"]
-        return res
+        return self._results(scores[0], rows[0], k, keep)
 
     def search(self, query: str, k: int = 10, domain: str | None = None, year_from: int | None = None,
-               year_to: int | None = None, source: str | None = None, institution: str | None = None) -> pd.DataFrame:
+               year_to: int | None = None, source: str | None = None) -> pd.DataFrame:
         """Top-k documents for a natural-language query, with optional filters."""
         keep = np.ones(len(self.docs), dtype=bool)
         d = self.docs
@@ -120,8 +113,6 @@ class SimilarityIndex:
             keep &= (d["year"] <= year_to).to_numpy()
         if source:
             keep &= (d["source"] == source).to_numpy()
-        if institution:
-            keep &= (d["institution"] == institution).to_numpy()
         n = len(d) if not keep.all() else k
         scores, rows = self.index.search(self._encode(query), n)
         return self._results(scores[0], rows[0], k, keep)
@@ -190,35 +181,8 @@ def search_eval(index: SimilarityIndex, k: int = 10) -> dict:
             "by_domain": {d: round(float(np.mean(v)), 4) for d, v in by_domain.items()}, "per_query": per_query}
 
 
-def neighbour_pairs(index: SimilarityIndex, k: int = 10) -> pd.DataFrame:
-    """Each document's k nearest neighbours that belong to a different institution."""
-    scores, rows = index.index.search(index.vectors, k + 1)
-    d = index.docs
-    a = np.repeat(np.arange(len(d)), k + 1)
-    b, s = rows.ravel(), scores.ravel()
-    pairs = pd.DataFrame({"a": a, "b": b, "score": s})
-    pairs = pairs[(pairs["a"] != pairs["b"]) & (pairs["b"] >= 0)]
-    inst = d["institution"].to_numpy()
-    pairs = pairs[inst[pairs["a"]] != inst[pairs["b"]]]
-    # keep each unordered pair once
-    lo, hi = np.minimum(pairs["a"], pairs["b"]), np.maximum(pairs["a"], pairs["b"])
-    pairs = pairs.assign(a=lo, b=hi).drop_duplicates(["a", "b"])
-    dom = d["domain"].to_numpy()
-    pairs["same_domain"] = dom[pairs["a"]] == dom[pairs["b"]]
-    return pairs.reset_index(drop=True)
-
-
-def choose_threshold(pairs: pd.DataFrame, target: float = 0.95) -> float:
-    """Lowest similarity above which at least `target` of cross-institution pairs share a domain."""
-    for t in np.arange(0.30, 0.96, 0.01):
-        above = pairs[pairs["score"] >= t]
-        if len(above) and above["same_domain"].mean() >= target:
-            return round(float(t), 2)
-    return 0.95
-
-
 def main() -> None:
-    """Build the MiniLM index, run every evaluation and save the cross-institution pairs."""
+    """Build the MiniLM index and run every evaluation."""
     cfg = load_config()
     docs = pd.read_parquet(path("documents"))
     proc = path("processed")
@@ -240,14 +204,6 @@ def main() -> None:
     for name in ("minilm", "specter2", "tfidf_svd_baseline", "random_baseline"):
         print(f"  {name:<20} {sim[name]}")
 
-    pairs = neighbour_pairs(index)
-    threshold = choose_threshold(pairs)
-    flagged = pairs[pairs["score"] >= threshold]
-    sim["cross_institution"] = {"threshold": threshold, "rule": "lowest score where >=95% of cross-institution neighbour pairs share a domain",
-                                "pairs_flagged": int(len(flagged)), "same_domain_share": round(float(flagged["same_domain"].mean()), 4)}
-    out = flagged.assign(a=docs["doc_id"].to_numpy()[flagged["a"]], b=docs["doc_id"].to_numpy()[flagged["b"]])
-    out.rename(columns={"a": "doc_a", "b": "doc_b"}).to_parquet(path("outputs") / "cross_institution_pairs.parquet", index=False)
-    print(f"Cross-institution threshold {threshold}: {len(flagged):,} pairs flagged")
 
     search = search_eval(index)
     print(f"Search Precision@10 over 20 queries: {search['precision@10']} {search['by_domain']}")

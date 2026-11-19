@@ -15,7 +15,7 @@ import pandas as pd
 import seaborn as sns
 
 from src.config import load_config
-from src.pipeline.similarity import SimilarityIndex, choose_threshold, neighbour_pairs
+from src.pipeline.similarity import SimilarityIndex
 
 sns.set_theme(style="whitegrid")
 FIG = Path("reports/figures"); FIG.mkdir(parents=True, exist_ok=True)
@@ -41,29 +41,13 @@ plt.tight_layout(); plt.savefig(FIG / "similarity_retrieval.png", dpi=150); plt.
 table
 
 # %% [markdown]
-# ## Choosing the cross-institution similarity threshold
-# For every document we take its 10 nearest neighbours from *other* institutions. The threshold
-# is the lowest cosine similarity at which at least 95% of those pairs share a domain.
+# ## Example: most similar documents
 
 # %%
 index = SimilarityIndex(docs, vec, cfg["models"]["embedding"])
-pairs = neighbour_pairs(index)
-threshold = choose_threshold(pairs)
-fig, ax = plt.subplots(figsize=(8, 4))
-sns.histplot(data=pairs, x="score", hue="same_domain", bins=80, element="step", ax=ax)
-ax.axvline(threshold, color="black", ls="--"); ax.text(threshold + 0.005, ax.get_ylim()[1] * 0.9, f"threshold {threshold}")
-ax.set_title("Cross-institution neighbour pairs by cosine similarity")
-plt.tight_layout(); plt.savefig(FIG / "similarity_threshold.png", dpi=150); plt.show()
-bins = pd.cut(pairs["score"], np.arange(0.3, 1.01, 0.05))
-pairs.groupby(bins, observed=True)["same_domain"].agg(["mean", "size"]).round(3)
-
-# %% [markdown]
-# ## Example: similar innovations from other institutions
-
-# %%
 example = docs[(docs["source"] == "patent") & (docs["domain"] == "Healthcare")].iloc[0]
-print(example["title"], "—", example["institution_name"])
-index.similar(example["doc_id"], 5)[["title", "institution_name", "source", "domain", "score", "other_institution"]]
+print(example["title"])
+index.similar(example["doc_id"], 5)[["title", "source", "domain", "score"]]
 
 # %% [markdown]
 # ## Semantic search: 20 hand-written queries

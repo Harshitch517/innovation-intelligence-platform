@@ -54,7 +54,4 @@ export const api = {
   trends: (domain) => request(`/trends${query({ domain })}`),
   clusters: (params) => request(`/clusters${query(params)}`),
   cluster: (id) => request(`/clusters/${encodeURIComponent(id)}`),
-  institutions: (params) => request(`/institutions${query(params)}`),
-  institution: (name) => request(`/institutions/${encodeURIComponent(name)}`),
-  network: (params) => request(`/institutions/network${query(params)}`),
 };

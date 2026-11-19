@@ -287,7 +287,6 @@ function DbResult({ a, b }) {
           <Flag ok={data.same_domain}>Same domain</Flag>
           <Flag ok={data.same_cluster}>Same sub-area</Flag>
           <Flag ok={data.same_global_cluster}>Same global cluster</Flag>
-          <Flag ok={data.different_institutions}>Different institutions</Flag>
         </ul>
         <div>
           <p className="text-xs text-muted">Shared topic keywords</p>

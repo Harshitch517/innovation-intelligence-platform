@@ -8,6 +8,7 @@ INT395 project. Every number below is read from the files in `reports/` written 
 - **Papers:** OpenAlex journal articles with at least one university / research-institute author, labelled by primary topic (topic lists in `reports/label_sources.md`).
 - **Cleaning:** 609 short or missing abstracts, 1,433 non-English abstracts and 212 duplicate titles removed.
 - **Final dataset:** 30,000 documents, 5,763 institutions; largest domain share 20%; splits 21,000 / 4,500 / 4,500 (stratified, seed 42).
+- **Supplement:** 1,200 more papers drawn at random from OpenAlex worldwide (seed 43, 82 countries, no country or institution filter). They are searchable and assigned to the existing clusters, but kept out of every evaluation below.
 
 | domain | paper | patent |
 |---|---|---|
@@ -73,9 +74,7 @@ Precision@10 is small in absolute terms because most documents have only one or 
 
 **Semantic search:** Precision@10 = 0.97 over 20 hand-written queries (per domain: Artificial Intelligence 0.95, Healthcare 0.90, Robotics 1.00, Cybersecurity 1.00, Renewable Energy 1.00).
 
-**Cross-institution similarity:** threshold 0.59 (lowest score where >=95% of cross-institution neighbour pairs share a domain); 121,774 pairs flagged.
-
-**Database check:** pgvector HNSW top-10 identical to FAISS for 100% of 100 test documents (median query 3.8 ms).
+**Database check:** pgvector HNSW top-10 identical to FAISS for 100% of 100 test documents (median query 3.9 ms).
 
 ![Retrieval](figures/similarity_retrieval.png)
 
@@ -113,12 +112,6 @@ Silhouette is low but positive (research topics form a continuum); ARI is low be
 
 ![Emerging](figures/emerging_top10.png)
 
-## 7. Institutions
-
-605 institutions with at least 10 documents are profiled (mean embedding). Network: 2,210 edges (similarity >= 0.8028 or >= 3 shared sub-areas, at most 8 per node). Most connected: advanced institute korea science technology, national seoul university, korea university, california university, texas university.
-
-![Network](figures/institution_network.png)
-
-## 8. Changes from the original plan
+## 7. Changes from the original plan
 
 See PLAN.md Section 10 (patent source moved from PatentsView to BigQuery; hybrid text table to stay under the 200 GB query cap; US grants only; extended labelling rule; non-English abstracts removed; Gemini model switched to a lighter one).

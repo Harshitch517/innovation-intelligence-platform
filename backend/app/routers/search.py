@@ -25,13 +25,12 @@ def search(
     year_from: int | None = None,
     year_to: int | None = None,
     source: str | None = Query(None, pattern="^(patent|paper)$"),
-    institution: str | None = None,
     k: int = Query(10, ge=1, le=50),
 ) -> dict:
     """Top-k documents for a query, ranked by cosine similarity, with optional filters."""
     where, params = [], []
     for col, val, op in (("domain", domain, "="), ("year", year_from, ">="), ("year", year_to, "<="),
-                         ("source", source, "="), ("institution", institution, "=")):
+                         ("source", source, "=")):
         if val is not None:
             where.append(f"{col} {op} %s")
             params.append(val)
@@ -71,7 +70,6 @@ def compare(a: str, b: str) -> dict:
         "same_cluster": da["cluster_id"] == db_["cluster_id"],
         "same_global_cluster": da["global_cluster"] == db_["global_cluster"],
         "shared_keywords": sorted(shared),
-        "different_institutions": da["institution"] != db_["institution"],
         "insights": local_compare(da, db_, sim),
     }
 

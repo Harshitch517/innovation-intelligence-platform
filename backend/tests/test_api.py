@@ -40,17 +40,13 @@ def test_document_detail_and_404(client, sample):
     assert client.get("/documents/PAT-NOPE").status_code == 404
 
 
-def test_similar_marks_other_institutions(client, sample):
+def test_similar(client, sample):
     r = client.get(f"/documents/{sample['patent']}/similar", params={"k": 5})
     res = r.json()["results"]
     assert len(res) == 5 and all(x["doc_id"] != sample["patent"] for x in res)
-    assert all(x["other_institution"] == (x["institution"] != sample_institution(client, sample["patent"])) for x in res)
-    only = client.get(f"/documents/{sample['patent']}/similar", params={"k": 5, "other_institutions_only": True}).json()
-    assert all(x["other_institution"] for x in only["results"])
-
-
-def sample_institution(client, doc_id):
-    return client.get(f"/documents/{doc_id}").json()["institution"]
+    scores = [x["score"] for x in res]
+    assert scores == sorted(scores, reverse=True)
+    assert all("other_institution" not in x for x in res)
 
 
 def test_compare(client, sample):
@@ -93,7 +89,7 @@ def test_overview(client):
     body = client.get("/stats/overview").json()
     assert body["documents"] >= 30000 and body["patents"] + body["papers"] == body["documents"]
     assert {x["key"] for x in body["by_domain"]} == DOMAINS
-    assert len(body["top_institutions"]) == 15
+    assert "top_institutions" not in body and "institutions" not in body
 
 
 def test_trends(client):
@@ -109,38 +105,27 @@ def test_clusters(client, sample):
     allc = client.get("/clusters").json()
     assert {c["scope"] for c in allc} == {"global", "domain"}
     detail = client.get(f"/clusters/{sample['cluster']}").json()
-    assert detail["members"] and detail["counts"] and detail["top_institutions"]
+    assert detail["members"] and detail["counts"] and "top_institutions" not in detail
     g = client.get("/clusters", params={"scope": "global"}).json()[0]
     assert client.get(f"/clusters/{g['cluster_id']}").json()["members"]
     assert client.get("/clusters/XX-999").status_code == 404
 
 
-def test_institutions(client, sample):
-    lst = client.get("/institutions", params={"limit": 5}).json()
-    assert len(lst) == 5 and lst[0]["documents"] >= lst[-1]["documents"]
-    found = client.get("/institutions", params={"q": "tsinghua"}).json()
-    assert any("Tsinghua" in x["name"] for x in found)
-    d = client.get(f"/institutions/{sample['institution']}").json()
-    assert d["similar"] and d["recent_documents"] and sum(d["by_domain"].values()) == d["documents"]
-    assert client.get("/institutions/not a real place").status_code == 404
+def test_institution_endpoints_removed(client):
+    for url in ("/institutions", "/institutions/network", "/institutions/x"):
+        assert client.get(url).status_code == 404
 
 
-def test_network(client):
-    full = client.get("/institutions/network").json()
-    assert len(full["nodes"]) > 500 and len(full["edges"]) > 1000
-    ids = {n["id"] for n in full["nodes"]}
-    assert all(e["source"] in ids and e["target"] in ids for e in full["edges"])
-    robo = client.get("/institutions/network", params={"domain": "Robotics"}).json()
-    assert 0 < len(robo["nodes"]) < len(full["nodes"])
+def test_supplement_is_random_not_india_focused(client):
+    """The supplement is a random worldwide sample: no single country dominates it."""
+    from app.services.db import fetch_all, fetch_one
 
-
-def test_lpu_profile_and_search(client):
-    found = client.get("/institutions", params={"q": "lovely"}).json()
-    assert found and found[0]["name"] == "Lovely Professional University" and found[0]["documents"] >= 300
-    d = client.get(f"/institutions/{found[0]['institution']}").json()
-    assert d["country"] == "IN" and d["similar"] and d["recent_documents"]
-    res = client.get("/search", params={"q": "intrusion detection", "institution": found[0]["institution"], "k": 5}).json()
-    assert len(res["results"]) == 5 and all(r["institution_name"] == "Lovely Professional University" for r in res["results"])
+    n = fetch_one("SELECT count(*) AS n FROM documents WHERE split = 'extra'")["n"]
+    assert n == 1200
+    top = fetch_all("SELECT country, count(*) AS c FROM documents WHERE split = 'extra' GROUP BY 1 ORDER BY 2 DESC LIMIT 1")[0]
+    assert top["c"] / n < 0.4
+    lpu = fetch_one("SELECT count(*) AS n FROM documents WHERE institution_name ILIKE '%%lovely professional%%'")["n"]
+    assert lpu < 20
 
 
 def test_full_text_links(client, sample, monkeypatch):

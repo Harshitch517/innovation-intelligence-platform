@@ -18,9 +18,8 @@ function ClusterChip({ cluster, label }) {
 
 export default function Document() {
   const { id } = useParams();
-  const [otherOnly, setOtherOnly] = useState(true);
   const doc = useApi(() => api.document(id), [id]);
-  const sim = useApi(() => api.similar(id, { k: 8, other_institutions_only: otherOnly }), [id, otherOnly]);
+  const sim = useApi(() => api.similar(id, { k: 8 }), [id]);
 
   if (doc.error) return <ErrorBox error={doc.error} />;
   if (!doc.data) return <Loading />;
@@ -36,7 +35,7 @@ export default function Document() {
         </div>
         <h1 className="text-xl font-semibold leading-snug sm:text-2xl">{d.title}</h1>
         <p className="text-sm text-ink-2">
-          <Link to={`/institutions?ids=${encodeURIComponent(d.institution)}`} className="font-medium hover:underline">{d.institution_name}</Link>
+          <span className="font-medium">{d.institution_name}</span>
           {d.country && <span className="text-muted"> · {d.country}</span>}
         </p>
         <Card title="Abstract">
@@ -53,13 +52,7 @@ export default function Document() {
       </div>
 
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Similar innovations</h2>
-          <label className="flex items-center gap-2 text-xs text-ink-2">
-            <input type="checkbox" checked={otherOnly} onChange={(e) => setOtherOnly(e.target.checked)} />
-            other institutions only
-          </label>
-        </div>
+        <h2 className="text-sm font-semibold">Similar innovations</h2>
         {sim.error && <ErrorBox error={sim.error} />}
         {!sim.data && !sim.error && <Loading />}
         {sim.data?.results.length === 0 && <Empty>No similar documents.</Empty>}

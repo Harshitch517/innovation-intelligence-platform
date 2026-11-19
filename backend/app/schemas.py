@@ -19,7 +19,6 @@ class DocumentSummary(BaseModel):
 class ScoredDocument(DocumentSummary):
     score: float
     snippet: str | None = None
-    other_institution: bool | None = None
 
 
 class SearchResponse(BaseModel):
@@ -86,7 +85,6 @@ class CompareResponse(BaseModel):
     same_cluster: bool
     same_global_cluster: bool
     shared_keywords: list[str]
-    different_institutions: bool
     insights: Insights
 
 
@@ -116,22 +114,14 @@ class Count(BaseModel):
     count: int
 
 
-class InstitutionCount(BaseModel):
-    institution: str
-    name: str
-    count: int
-
-
 class OverviewResponse(BaseModel):
     documents: int
     patents: int
     papers: int
-    institutions: int
     by_domain: list[Count]
     by_source: list[Count]
     by_year: list[Count]
     by_domain_year: list[dict]
-    top_institutions: list[InstitutionCount]
 
 
 class ClusterSummary(BaseModel):
@@ -163,52 +153,6 @@ class ClusterDetail(ClusterSummary):
     sample_titles: list[str]
     counts: dict[int, int]
     members: list[DocumentSummary]
-    top_institutions: list[InstitutionCount]
-
-
-class InstitutionSummary(BaseModel):
-    institution: str
-    name: str
-    country: str | None
-    documents: int
-    patents: int
-    papers: int
-    top_domain: str
-
-
-class SimilarInstitution(BaseModel):
-    institution: str
-    name: str
-    similarity: float
-
-
-class InstitutionDetail(InstitutionSummary):
-    by_domain: dict[str, int]
-    by_year: dict[str, int]
-    top_clusters: list[ClusterBrief]
-    similar: list[SimilarInstitution]
-    recent_documents: list[DocumentSummary]
-
-
-class NetworkNode(BaseModel):
-    id: str
-    name: str
-    country: str | None
-    documents: int
-    top_domain: str
-
-
-class NetworkEdge(BaseModel):
-    source: str
-    target: str
-    similarity: float
-    shared_clusters: int
-
-
-class NetworkResponse(BaseModel):
-    domain: str | None
-    nodes: list[NetworkNode]
-    edges: list[NetworkEdge]
 
 
 class UploadText(BaseModel):

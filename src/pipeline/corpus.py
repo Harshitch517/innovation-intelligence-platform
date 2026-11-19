@@ -1,7 +1,7 @@
-"""Load every served document: the 30,000-document main set plus the India supplement.
+"""Load every served document: the 30,000-document main set plus the random supplement.
 
 Evaluation (classifier, similarity, clustering metrics, trend back-test) uses the main set only;
-institution profiles and the database use everything returned here.
+clusters and the database use everything returned here.
 """
 from __future__ import annotations
 
@@ -21,7 +21,6 @@ def load_all(include_extra: bool = True) -> tuple[pd.DataFrame, np.ndarray]:
     vectors = np.load(path("processed") / "embeddings_minilm.npy")
     docs = docs.merge(pd.read_parquet(path("processed") / "splits.parquet"), on="doc_id", how="left", validate="one_to_one")
     docs = docs.merge(pd.read_parquet(path("outputs") / "doc_clusters.parquet"), on="doc_id", how="left", validate="one_to_one")
-    docs["lpu"] = docs["institution_raw"].fillna("").str.contains("Lovely Professional", case=False)
 
     extra_file = path("processed") / "documents_extra.parquet"
     if include_extra and extra_file.exists():

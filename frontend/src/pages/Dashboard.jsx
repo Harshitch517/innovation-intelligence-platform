@@ -60,24 +60,6 @@ function YearChart({ data, c }) {
   );
 }
 
-function TopInstitutions({ data, c }) {
-  const rows = data.top_institutions.slice(0, 10).map((t) => ({ ...t, label: t.name.length > 30 ? `${t.name.slice(0, 28)}…` : t.name }));
-  return (
-    <ChartCard title="Top institutions" subtitle="Documents (patents + papers)" columns={["Institution", "Documents"]}
-      rows={rows.map((r) => [r.name, r.count])}>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={rows} layout="vertical" margin={{ left: 8, right: 24 }} barCategoryGap={6}>
-          <CartesianGrid horizontal={false} />
-          <XAxis type="number" tickFormatter={fmt} />
-          <YAxis type="category" dataKey="label" width={200} tick={{ fontSize: 11 }} interval={0} />
-          <Tooltip content={<ChartTooltip labelFormatter={(l) => rows.find((r) => r.label === l)?.name || l} />} cursor={{ fill: c.grid, opacity: 0.4 }} />
-          <Bar dataKey="count" name="documents" fill={c.accent} radius={[0, 4, 4, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </ChartCard>
-  );
-}
-
 function Sparkline({ counts, color }) {
   const values = YEARS.map((y) => counts[y] ?? 0);
   const max = Math.max(...values, 1);
@@ -163,7 +145,7 @@ export default function Dashboard() {
   const c = useColors();
   const { data, error } = useApi(() => api.overview(), []);
   const totals = useMemo(() => data && [
-    ["Documents", data.documents], ["Patents", data.patents], ["Papers", data.papers], ["Institutions", data.institutions],
+    ["Documents", data.documents], ["Patents", data.patents], ["Papers", data.papers],
   ], [data]);
   if (error) return <ErrorBox error={error} />;
   if (!data) return <Loading />;
@@ -173,17 +155,14 @@ export default function Dashboard() {
         <h1 className="text-2xl font-semibold">Dashboard</h1>
         <p className="mt-1 text-sm text-ink-2">University and research-institute innovation, 2020–2025, across five technology domains.</p>
       </div>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-3 gap-3">
         {totals.map(([l, v]) => <StatTile key={l} label={l} value={v} />)}
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         <DomainSourceChart data={data} c={c} />
         <YearChart data={data} c={c} />
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Emerging c={c} />
-        <TopInstitutions data={data} c={c} />
-      </div>
+      <Emerging c={c} />
       <Classify c={c} />
     </div>
   );

@@ -8,15 +8,11 @@ const Cluster = lazy(() => import("./pages/Cluster"));
 const Compare = lazy(() => import("./pages/Compare"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Document = lazy(() => import("./pages/Document"));
-const Institutions = lazy(() => import("./pages/Institutions"));
-const Network = lazy(() => import("./pages/Network"));
 
 const NAV = [
   { to: "/", label: "Search", end: true },
   { to: "/dashboard", label: "Dashboard" },
   { to: "/compare", label: "Compare" },
-  { to: "/institutions", label: "Institutions" },
-  { to: "/network", label: "Network" },
 ];
 
 export default function App() {
@@ -56,15 +52,13 @@ export default function App() {
           <Route path="/documents/:id" element={<Document />} />
           <Route path="/compare" element={<Compare />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/institutions" element={<Institutions />} />
-          <Route path="/network" element={<Network />} />
           <Route path="/clusters/:id" element={<Cluster />} />
           <Route path="*" element={<p className="text-ink-2">Page not found.</p>} />
         </Routes>
         </Suspense>
       </main>
       <footer className="mx-auto max-w-6xl px-4 pb-8 text-xs text-muted">
-        INT395 · 31,169 university patents (Google Patents) and papers (OpenAlex), 2020–2025, including an India supplement
+        INT395 · 31,200 university patents (Google Patents) and papers (OpenAlex), 2020–2025
       </footer>
     </div>
   );

@@ -138,11 +138,8 @@ export function DocCard({ doc, children }) {
         {doc.title}
       </Link>
       <p className="mt-1 text-sm text-ink-2">
-        <Link to={`/institutions?ids=${encodeURIComponent(doc.institution)}`} className="hover:underline">
-          {doc.institution_name}
-        </Link>
+        {doc.institution_name}
         {doc.country && <span className="text-muted"> · {doc.country}</span>}
-        {doc.other_institution && <span className="ml-2 whitespace-nowrap rounded bg-surface-2 px-1.5 py-0.5 text-[11px] text-ink-2">other institution</span>}
       </p>
       {children}
     </article>
